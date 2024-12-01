@@ -1,0 +1,10 @@
+**/.DS_Store
+**/__pycache__
+**/.env
+**/.vscode
+
+line_app/images
+line_app/logs
+
+tsimcam/include/root_ca.h
+

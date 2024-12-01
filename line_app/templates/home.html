@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+    <h2>Welcome, {{ user.username }}</h2>
+    <p>Your parking status: {{ user.parking_status }}</p>
+    <p>Your license plate: {{ user.license_plate }}</p>
+    
+    <!-- Edit button -->
+    <a href="{{ url_for('home.edit_user') }}">
+        <button>Edit</button>
+    </a>
+{% endblock %}

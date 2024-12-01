@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Flask Parking System{% endblock %}
+
+{% block content %}
+    <h2>Register</h2>
+    
+    <!-- Registration form -->
+    <form method="POST" action="{{ url_for('auth.register') }}">
+        {{ form.hidden_tag() }} <!-- CSRF Token -->
+        <!-- Username field -->
+        <div>
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required minlength="4" maxlength="15">
+        </div>
+
+        <!-- Password field -->
+        <div>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required minlength="6" maxlength="20">
+        </div>
+
+        <!-- Parking status field
+        <div>
+            <label for="parking_status">Parking Status</label>
+            <select id="parking_status" name="parking_status" required>
+                <option value="available">Available</option>
+                <option value="occupied">Occupied</option>
+            </select>
+        </div> -->
+
+        <!-- License plate field -->
+        <!-- <div>
+            <label for="license_plate">License Plate</label>
+            <input type="text" id="license_plate" name="license_plate" required minlength="6" maxlength="15">
+        </div> -->
+
+        <!-- Submit button -->
+        <div>
+            <button type="submit">Register</button>
+        </div>
+    </form>
+
+    <!-- Display flash messages if any -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul>
+                {% for category, message in messages %}
+                    <li class="alert {{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+{% endblock %}

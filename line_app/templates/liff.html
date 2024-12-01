@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block style %}
+/* Custom styles for form and button */
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f8f9fa;
+      font-family: Arial, sans-serif;
+      margin: 0;
+    }
+
+    .card {
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      background-color: #ffffff;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    #responseMessage {
+      margin-top: 10px;
+      font-size: 16px;
+      color: #333;
+    }
+
+    ons-input {
+      width: 100%;
+      margin-top: 15px;
+    }
+
+    ons-button {
+      margin-top: 20px;
+      width: 100%;
+      font-size: 18px;
+      font-weight: bold;
+      background-color: #4CAF50;
+      color: #ffffff;
+      border-radius: 5px;
+      padding: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    ons-button:hover {
+      background-color: #45a049;
+    }
+{% endblock %}
+{% block title %}Images{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <h2>Update Value</h2>
+    <p id="responseMessage"></p>
+    <ons-input id="value" placeholder="Enter a value" modifier="underbar"></ons-input>
+    <ons-button onclick="update_last()">Update</ons-button>
+  </div>
+
+  <script>
+    // Global variable to track LIFF status
+    var liff_status = false;
+
+    // Initialize LIFF when the page loads
+    window.onload = function () {
+      liff.init({ liffId: "{{ viewModel.liff_id }}" })
+        .then(() => {
+          console.log("LIFF initialized");
+          liff_status = true;
+        })
+        .catch(err => console.error("LIFF Initialization Error:", err));
+    };
+
+    // Function to send a notification message
+    function sent_notify() {
+      // Only send the message if LIFF is initialized
+      if (liff_status) {
+        liff.sendMessages([
+          {
+            type: "text",
+            text: "notify"
+          }
+        ])
+          .then(() => {
+            console.log("Message sent successfully");
+          })
+          .catch((err) => {
+            console.error("Error sending message:", err);
+          });
+      } else {
+        console.log("LIFF is not initialized or available.");
+      }
+    }
+
+    // Function to update and fetch the latest record
+    async function update_last() {
+      const inputValue = document.getElementById("value").value;
+
+      // Get the previous value
+      const temp = await fetch("/get_last");
+      const previous = await temp.json();
+
+      // Insert new value into the database
+      try {
+        await fetch("/update_last", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ value: inputValue })
+        });
+        console.log("Value updated successfully");
+      } catch (error) {
+        console.error("Error updating value:", error);
+        document.getElementById("responseMessage").textContent = "Error updating value.";
+        return;
+      }
+
+      // Retrieve the latest record from the database
+      try {
+        const response = await fetch("/get_last");
+        const data = await response.json();
+
+        if (data.error) {
+          document.getElementById("responseMessage").textContent = data.error;
+        } else {
+          document.getElementById("responseMessage").textContent =
+            `tstamp: ${data.tstamp}, value: ${previous.value} -> ${inputValue}`;
+
+          // Send a notification after the update
+          sent_notify();
+        }
+      } catch (error) {
+        console.error("Error fetching latest record:", error);
+        document.getElementById("responseMessage").textContent = "Error fetching latest record.";
+      }
+    }
+  </script>
+{% endblock %}

@@ -1,0 +1,32 @@
+services:
+  mongodb:
+    image: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=1234
+    expose:
+      - 27017
+  line_app:
+    build: ./line_app
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./line_app:/usr/src/app
+    depends_on:
+      - "mongodb"
+  # mosquitto:
+  #   image: eclipse-mosquitto:latest
+  #   container_name: mosquitto
+  #   ports:
+  #     - "1883:1883"   # Default MQTT port
+  #     - "9001:9001"   # WebSocket support (optional, can be omitted if not needed)
+  #   volumes:
+  #     - mosquitto-data:/mosquitto/data  # Persistent storage for Mosquitto data
+  #     - mosquitto-config:/mosquitto/config  # Persistent storage for configuration
+  #   environment:
+  #     - MOSQUITTO_USER=mosquitto
+  #     - MOSQUITTO_PASSWORD=1234   # Set a password for Mosquitto (optional)
+  #   networks:
+  #     - mqtt_network

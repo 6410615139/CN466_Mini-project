@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Images{% endblock %}
+{% block content %}
+    {% for image in viewModel.uuid %}
+        <li>
+            <a href="{{ url_for('image.show_image', uuid=image) }}">
+                {{ image }}
+            </a>
+        </li>
+    {% endfor %}
+{% endblock %}

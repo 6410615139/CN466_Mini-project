@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block style %}
+<style>
+    .table-container {
+        margin: 1em;
+    }
+    .table-title {
+        text-align: center;
+        font-size: 1.5em;
+        margin-top: 1em;
+    }
+    .ons-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .ons-table th, .ons-table td {
+        padding: 10px;
+        border: 1px solid #ddd;
+        text-align: center;
+    }
+    .ons-table th {
+        background-color: #f2f2f2;
+    }
+
+    /* Modal styling */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+    }
+    .modal-content {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        width: 400px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .modal-content h3 {
+        margin-top: 0;
+    }
+    .modal-content .form-group {
+        margin-bottom: 15px;
+    }
+    .modal-content label {
+        display: block;
+        margin-bottom: 5px;
+    }
+    .modal-content input, .modal-content select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    .modal-content .btn {
+        width: 48%;
+        margin: 1%;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    .btn-save {
+        background-color: #4CAF50;
+        color: white;
+    }
+    .btn-cancel {
+        background-color: #f44336;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="table-title">Admin Dashboard</h1>
+<p><a href="{{ url_for('admin.add_user') }}">Add new user</a></p>
+
+<h2>Users List:</h2>
+<div class="table-container">
+    <table class="ons-table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Password</th>
+                <th>Is Admin</th>
+                <th>Parking Status</th>
+                <th>License Plate</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+                <tr id="user-row-{{ user['_id'] }}">
+                    <td>{{ user['username'] }}</td>
+                    <td>********</td>
+                    <td>{{ 'Yes' if user['is_admin'] else 'No' }}</td>
+                    <td>{{ user['parking_status'] }}</td>
+                    <td>{{ user['license_plate'] }}</td>
+                    <td>
+                        <button onclick="openEditModal('{{ user['_id'] }}')">Edit</button>
+                        <button onclick="deleteUser('{{ user['_id'] }}')">Delete</button>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Edit User Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <h3>Edit User</h3>
+        <form id="editForm">
+            <div class="form-group">
+                <label for="editUsername">Username</label>
+                <input type="text" id="editUsername" name="username">
+            </div>
+            <div class="form-group">
+                <label for="editPassword">Password</label>
+                <input type="password" id="editPassword" name="password">
+            </div>
+            <div class="form-group">
+                <label for="editIsAdmin">Is Admin</label>
+                <input type="checkbox" id="editIsAdmin" name="is_admin">
+            </div>
+            <div class="form-group">
+                <label for="editParkingStatus">Parking Status</label>
+                <select id="editParkingStatus" name="parking_status">
+                    <option value="available">Available</option>
+                    <option value="parking">Parking</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="editLicensePlate">License Plate</label>
+                <input type="text" id="editLicensePlate" name="license_plate">
+            </div>
+            <button type="button" class="btn btn-save" onclick="submitEdit()">Save</button>
+            <button type="button" class="btn btn-cancel" onclick="closeEditModal()">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<script src="/static/admin_dashboard.js"></script>
+{% endblock %}
