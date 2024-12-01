@@ -4,10 +4,10 @@ from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
 import logging
 from bson import ObjectId
+from bson.json_util import dumps
 
 load_dotenv()
 
-# Configure logging
 logging.basicConfig(
     filename='logs/mongodb_log.txt',
     level=logging.INFO,
@@ -15,18 +15,32 @@ logging.basicConfig(
 )
 logger = logging.getLogger()
 
-host = os.environ["MONGO_HOST"]
-user = os.environ["MONGO_INITDB_ROOT_USERNAME"]
-passwd = os.environ["MONGO_INITDB_ROOT_PASSWORD"]
-port = 27017
+# Environment variable setup
+MONGO_HOST = os.getenv("MONGO_HOST")
+MONGO_USER = os.getenv("MONGO_INITDB_ROOT_USERNAME")
+MONGO_PASS = os.getenv("MONGO_INITDB_ROOT_PASSWORD")
+MONGO_PORT = int(os.getenv("MONGO_PORT", 27017))
+
+# Utility functions
+def mongo_connect():
+    """Create a MongoClient connection."""
+    try:
+        client = MongoClient(
+            f"mongodb://{MONGO_USER}:{MONGO_PASS}@{MONGO_HOST}:{MONGO_PORT}"
+        )
+        return client.db  # Return the specific database
+    except Exception as e:
+        logging.error(f"Error connecting to MongoDB: {e}")
+        raise
 
 def create_admin_user():
     try:
-        mongoClient = MongoClient(f"mongodb://{user}:{passwd}@{host}:{port}")
-        admin = mongoClient.db.users.find_one({'username': 'admin'})
+        db = mongo_connect()
+        admin = db.users.find_one({'username': 'admin'})
         if not admin:
             logger.info("Admin user not found. Creating admin...")
             user_data = {
+                'line': '',
                 'username': 'admin',
                 'password': generate_password_hash('123456', method='pbkdf2:sha256'),
                 'is_admin': True,
@@ -34,7 +48,7 @@ def create_admin_user():
                 'license_plate': ''
             }
             
-            mongoClient.db.users.insert_one(user_data)
+            db.users.insert_one(user_data)
             logger.info("Admin user created!")
         else:
             logger.info("Admin user already exists.")
@@ -44,12 +58,12 @@ def create_admin_user():
 
 def mongo_img_insert(time, value):
     try:
-        mongoClient = MongoClient(f"mongodb://{user}:{passwd}@{host}:{port}")
+        db = mongo_connect()
         doc = {
             "tstamp": str(time),  # Store timestamp as string
             "uuid": str(value)  # Store UUID as string
         }
-        mongoClient.db.imgs.insert_one(doc)
+        db.imgs.insert_one(doc)
         logger.info(f"Document inserted with timestamp: {time} and UUID: {value}")
 
     except Exception as e:
@@ -58,8 +72,8 @@ def mongo_img_insert(time, value):
 
 def mongo_img_by_uuid(uuid):
     try:
-        mongoClient = MongoClient(f"mongodb://{user}:{passwd}@{host}:{port}")
-        doc = mongoClient.db.imgs.find_one({"uuid": uuid})
+        db = mongo_connect()
+        doc = db.imgs.find_one({"uuid": uuid})
         logger.info(f"Queried document with UUID: {uuid}")
         return doc
 
@@ -69,8 +83,8 @@ def mongo_img_by_uuid(uuid):
 
 def mongo_user_create(user_data):
     try:
-        mongoClient = MongoClient(f"mongodb://{user}:{passwd}@{host}:{port}")
-        result = mongoClient.db.users.insert_one(user_data)
+        db = mongo_connect()
+        result = db.users.insert_one(user_data)
         logger.info(f"User created with ID: {result.inserted_id}")
 
     except Exception as e:
@@ -79,8 +93,8 @@ def mongo_user_create(user_data):
 
 def mongo_user_find_uname(uname):
     try:
-        mongoClient = MongoClient(f"mongodb://{user}:{passwd}@{host}:{port}")
-        doc = mongoClient.db.users.find_one({"username": uname})
+        db = mongo_connect()
+        doc = db.users.find_one({"username": uname})
         logger.info(f"Queried user with username: {uname}")
         return doc
 
@@ -90,18 +104,15 @@ def mongo_user_find_uname(uname):
     
 def mongo_user_find_id(id):
     try:
-        # Convert `id` to `ObjectId` if it's a string
         if isinstance(id, str):
-            if ObjectId.is_valid(id):  # Check if the string is a valid ObjectId
+            if ObjectId.is_valid(id):
                 id = ObjectId(id)
             else:
                 logger.warning(f"Provided ID '{id}' is not a valid ObjectId.")
                 return None
 
-        # MongoDB connection (replace with your actual database and collection names)
-        mongoClient = MongoClient(f"mongodb://{user}:{passwd}@{host}:{port}")
-        # Query for the user document
-        doc = mongoClient.db.users.find_one({"_id": id})
+        db = mongo_connect()
+        doc = db.users.find_one({"_id": id})
         logger.info(f"Queried user with ID: {id}")
         return doc
 
@@ -111,8 +122,8 @@ def mongo_user_find_id(id):
     
 def mongo_user_find():
     try:
-        mongoClient = MongoClient(f"mongodb://{user}:{passwd}@{host}:{port}")
-        docs = mongoClient.db.users.find()
+        db = mongo_connect()
+        docs = db.users.find()
         logger.info("Queried all users")
         return docs
 
@@ -121,17 +132,13 @@ def mongo_user_find():
         return None
 
 def update_user_by_id(user_id, user_data):
-    """Update a user in MongoDB by user ID."""
-    mongoClient = MongoClient(f"mongodb://{user}:{passwd}@{host}:{port}")
-        # Convert user_id to ObjectId if necessary
+    db = mongo_connect()
     if isinstance(user_id, str):
         user_id = ObjectId(user_id)
-    mongoClient.db.users.update_one({'_id': user_id}, {"$set" : user_data})
+    db.users.update_one({'_id': user_id}, {"$set" : user_data})
 
 def delete_user_by_id(user_id):
-    """Delete a user from MongoDB by user ID."""
-    mongoClient = MongoClient(f"mongodb://{user}:{passwd}@{host}:{port}")
-    # Convert user_id to ObjectId if necessary
+    db = mongo_connect()
     if isinstance(user_id, str):
         user_id = ObjectId(user_id)
-    mongoClient.db.users.delete_one({'_id': user_id})
+    db.users.delete_one({'_id': user_id})
