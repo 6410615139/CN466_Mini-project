@@ -1,10 +1,8 @@
 import os
 from pymongo import MongoClient
 from dotenv import load_dotenv
-from werkzeug.security import generate_password_hash
 import logging
 from bson import ObjectId
-from bson.json_util import dumps
 
 load_dotenv()
 
@@ -32,29 +30,6 @@ def mongo_connect():
     except Exception as e:
         logging.error(f"Error connecting to MongoDB: {e}")
         raise
-
-def create_admin_user():
-    try:
-        db = mongo_connect()
-        admin = db.users.find_one({'username': 'admin'})
-        if not admin:
-            logger.info("Admin user not found. Creating admin...")
-            user_data = {
-                'line': '',
-                'username': 'admin',
-                'password': generate_password_hash('123456', method='pbkdf2:sha256'),
-                'is_admin': True,
-                'parking_status': 'available',
-                'license_plate': ''
-            }
-            
-            db.users.insert_one(user_data)
-            logger.info("Admin user created!")
-        else:
-            logger.info("Admin user already exists.")
-    except Exception as e:
-        logger.error(f"Error creating admin document: {e}")
-        return None
 
 def mongo_img_insert(time, value):
     try:
@@ -95,12 +70,15 @@ def mongo_user_find_uname(uname):
     try:
         db = mongo_connect()
         doc = db.users.find_one({"username": uname})
-        logger.info(f"Queried user with username: {uname}")
+        if doc:
+            logger.info(f"Queried user with username: {uname}")
+        else:
+            logger.warning(f"No user found with username: {uname}")
         return doc
-
     except Exception as e:
         logger.error(f"Error querying MongoDB: {e}")
         return None
+
     
 def mongo_user_find_id(id):
     try:

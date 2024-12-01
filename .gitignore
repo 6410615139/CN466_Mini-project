@@ -3,6 +3,7 @@
 **/.env
 **/.vscode
 
+line_app/example.db
 line_app/images
 line_app/logs
 
