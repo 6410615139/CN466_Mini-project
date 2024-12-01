@@ -29,3 +29,6 @@ Instructions
 2. ลดปัญหาอุปกรณ์สูญหาย และชำรุดของผู้พักอาศัย โดยใช้งานกล้องสำหรับตรวจสอบป้ายทะเบียนที่ลงทะเบียนไว้
 3. ตรวจสอบข้อมูลย้อนหลังได้ผ่าน LIFF (Line Frontend Framwork)
 
+## Overview
+
+![README/overview.jpg](README/overview.jpg)
