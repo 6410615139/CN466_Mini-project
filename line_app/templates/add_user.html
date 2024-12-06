@@ -73,9 +73,9 @@
             {% endfor %}
         </div>
         <div class="form-group">
-            <label for="license_plate">{{ form.license_plate.label }}</label>
-            {{ form.license_plate(class="form-control", id="license_plate") }}
-            {% for error in form.license_plate.errors %}
+            <label for="license_plates">{{ form.license_plates.label }}</label>
+            {{ form.license_plates(class="form-control", id="license_plates") }}
+            {% for error in form.license_plates.errors %}
                 <small style="color: red;">{{ error }}</small>
             {% endfor %}
         </div>

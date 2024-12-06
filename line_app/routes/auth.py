@@ -58,7 +58,6 @@ def register():
             'password': hashed_password,
             'is_admin': False,
             'parking_status': 'available',
-            'license_plate': ''
         }
         mongo_user_create(userdata)
         logger.info(f"User '{username}' registered successfully.")

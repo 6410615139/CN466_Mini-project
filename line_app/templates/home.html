@@ -4,8 +4,19 @@
 
 {% block content %}
     <h2>Welcome, {{ user.username }}</h2>
-    <p>Your parking status: {{ user.parking_status }}</p>
-    <p>Your license plate: {{ user.license_plate }}</p>
+    <p>Your parking status: {{ 'Parked' if user['parking_status'] else 'Free' }}</p>
+    
+    
+    <p>Your license plates:</p>
+    {% if license_plates %}
+        <ul>
+            {% for plate in license_plates %}
+                <li>{{ plate }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No license plates found.</p>
+    {% endif %}
     
     <!-- Edit button -->
     <a href="{{ url_for('home.edit_user') }}">

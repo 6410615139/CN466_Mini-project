@@ -2,7 +2,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash
 from flask_login import login_required, current_user
 from functools import wraps
-from utils.mongodb import mongo_user_find, update_user_by_id, mongo_user_find_id, delete_user_by_id, mongo_user_create
+from utils.mongodb import mongo_user_find, update_user_by_id, mongo_user_find_id, delete_user_by_id, mongo_user_create, get_users_with_license_plates, mongo_license_plate_insert
 from werkzeug.security import generate_password_hash
 from bson import ObjectId
 import logging
@@ -25,9 +25,12 @@ def admin_required(f):
 @login_required
 @admin_required
 def dashboard():
-    # Serve the admin dashboard page
-    users = mongo_user_find()  # Retrieve user data from MongoDB
-    return render_template('admin_dashboard.html', users=users)
+    try:
+        users = get_users_with_license_plates()  # Fetch users with license plates
+        return render_template('admin_dashboard.html', users=users)
+    except Exception as e:
+        logging.error(f"Error fetching users for dashboard: {e}")
+        return jsonify(success=False, error="Failed to fetch users"), 500
 
 @admin_blueprint.route('/edit_user', methods=['POST'])
 @login_required
@@ -93,20 +96,34 @@ def add_user():
     if form.validate_on_submit():  # Check if form is submitted and valid
         username = form.username.data
         password = generate_password_hash(form.password.data, method='pbkdf2:sha256')
-        license_plate = form.license_plate.data
+        raw_license_plates = form.license_plates.data
+
+        # Parse license plates into a list
+        license_plates = [
+            plate.strip() for plate in raw_license_plates.split(',')
+            if plate.strip()
+        ]
 
         # Create user data dictionary
         user_data = {
             'username': username,
             'password': password,
-            'license_plate': license_plate,
             'is_admin': False,  # Default new user to not be an admin
             'parking_status': None  # Default parking status to None
         }
 
-        # Insert new user into MongoDB
+        # Insert new user and related license plates
         try:
-            mongo_user_create(user_data)
+            # Insert user into the users collection
+            user_id = mongo_user_create(user_data)
+
+            # Insert license plates into the license_plates collection
+            for plate in license_plates:
+                mongo_license_plate_insert({
+                    "user_id": str(user_id),
+                    "plate": plate
+                })
+
             flash(f"User {username} created successfully.", "success")
             return redirect(url_for('admin.dashboard'))
         except Exception as e:

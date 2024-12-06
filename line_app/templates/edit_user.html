@@ -5,30 +5,42 @@
 {% block content %}
     <h2>Edit Your Information</h2>
     <form action="{{ url_for('home.edit_user') }}" method="POST">
-        {{ form.hidden_tag() }} <!-- CSRF Token -->
+    {{ form.hidden_tag() }} <!-- CSRF Token -->
 
-        <div>
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" value="{{ user.username }}" />
-        </div>
+    <!-- Username -->
+    <div>
+        <label for="username">Username:</label>
+        {{ form.username(class="form-control", id="username") }}
+    </div>
 
-        <div>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" placeholder="Leave blank if you don't want to change the password" />
-        </div>
+    <!-- Password -->
+    <div>
+        <label for="password">Password:</label>
+        {{ form.password(class="form-control", id="password", placeholder="Leave blank if unchanged") }}
+    </div>
 
-        <div>
-            <label for="parking_status">Parking Status:</label>
-            <input type="text" id="parking_status" name="parking_status" value="{{ user.parking_status }}" />
-        </div>
+    <!-- Parking Status -->
+    <div>
+        <label for="parking_status">Parking Status:</label>
+        {{ form.parking_status(class="form-check-input", id="parking_status") }}
+    </div>
 
-        <div>
-            <label for="license_plate">License Plate:</label>
-            <input type="text" id="license_plate" name="license_plate" value="{{ user.license_plate }}" />
-        </div>
+    <!-- License Plates -->
+    <div>
+        <label for="license_plates">License Plates (Comma-Separated):</label>
+        {{ form.license_plates(class="form-control", id="license_plates") }}
+    </div>
 
-        <button type="submit">Save Changes</button>
-    </form>
+    <!-- Admin Status -->
+    <div>
+        <label for="is_admin">Admin Status:</label>
+        {{ form.is_admin(class="form-check-input", id="is_admin") }}
+    </div>
 
-    <a href="{{ url_for('home.index') }}">Cancel</a>
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+</form>
+
+    <!-- Cancel Button -->
+    <a href="{{ url_for('home.index') }}" class="btn btn-secondary">Cancel</a>
 {% endblock %}

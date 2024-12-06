@@ -94,7 +94,7 @@
                 <th>Password</th>
                 <th>Is Admin</th>
                 <th>Parking Status</th>
-                <th>License Plate</th>
+                <th>License Plates</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -104,8 +104,14 @@
                     <td>{{ user['username'] }}</td>
                     <td>********</td>
                     <td>{{ 'Yes' if user['is_admin'] else 'No' }}</td>
-                    <td>{{ user['parking_status'] }}</td>
-                    <td>{{ user['license_plate'] }}</td>
+                    <td>{{ 'Parked' if user['parking_status'] else 'Free' }}</td>
+                    <td>
+                        {% if user['license_plates'] %}
+                            {{ user['license_plates']|join(', ') }}
+                        {% else %}
+                            No License Plates
+                        {% endif %}
+                    </td>
                     <td>
                         <button onclick="openEditModal('{{ user['_id'] }}')">Edit</button>
                         <button onclick="deleteUser('{{ user['_id'] }}')">Delete</button>
