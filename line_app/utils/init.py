@@ -3,7 +3,7 @@ import os
 from pymongo import MongoClient
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
-from utils.mongodb import mongo_connect, mongo_user_create
+from utils.mongodb import get_mongo_client, mongo_user_create
 from models import User
 
 load_dotenv()
@@ -17,14 +17,10 @@ MONGO_USER = os.getenv("MONGO_INITDB_ROOT_USERNAME")
 MONGO_PASS = os.getenv("MONGO_INITDB_ROOT_PASSWORD")
 MONGO_PORT = int(os.getenv("MONGO_PORT", 27017))
 
-MONGO_HOST = os.getenv("MONGO_HOST")
-MONGO_USER = os.getenv("MONGO_INITDB_ROOT_USERNAME")
-MONGO_PASS = os.getenv("MONGO_INITDB_ROOT_PASSWORD")
-MONGO_PORT = int(os.getenv("MONGO_PORT", 27017))
-
 def create_admin_user():
     try:
-        db = mongo_connect()
+        mongoClient = get_mongo_client()
+        db = mongoClient.db
         admin = db.users.find_one({'username': 'admin'})
         
         if not admin:
