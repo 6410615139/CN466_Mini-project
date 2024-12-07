@@ -72,3 +72,48 @@ def logout():
     flash('You have been logged out.', 'info')
     logger.info("User logged out.")
     return redirect(url_for('auth.login'))
+
+# Line bot webhook endpoint
+@auth_blueprint.route('/callback', methods=['POST'])
+def line_callback():
+    body = request.get_json()
+
+    # Get the sender's line_id from the event
+    for event in body['events']:
+        line_id = event['source']['userId']  # This is the line_id
+
+        # Check if the user is already registered
+        user = User.get_user_by_line_id(line_id)
+        if user:
+            # User is already registered
+            return jsonify({"status": "ok"})
+
+        # Fetch user profile (display_name and picture_url)
+        headers = {
+            'Authorization': f'Bearer {LINE_CHANNEL_ACCESS_TOKEN}'
+        }
+        profile_response = requests.get(LINE_PROFILE_URL + f"/{line_id}", headers=headers)
+        profile_data = profile_response.json()
+
+        display_name = profile_data['displayName']
+        picture_url = profile_data['pictureUrl']
+
+        # Hash password and create the user
+        userdata = {
+            'line': line_id,
+            'username': display_name,
+            'is_admin': False,
+            'limit': 0,
+        }
+
+        # Register the user
+        user = User(userdata)
+        user.create_user()
+
+        # Log the user in using Flask-Login (you might want to redirect or store session)
+        login_user(user)
+
+        # Respond to confirm the user is registered
+        return jsonify({"status": "ok", "message": "User registered successfully"})
+
+    return jsonify({"status": "error", "message": "No events found"})

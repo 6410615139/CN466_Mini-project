@@ -36,10 +36,11 @@ def create_admin_user():
         if not admin:
             logger.info("Admin user not found. Creating admin...")
             user_data = {
-                'username': 'admin',
-                'password': generate_password_hash('123456', method='pbkdf2:sha256'),
+                'line': "",
+                'username': "admin",
+                'pic': "",
                 'is_admin': True,
-                'parking_status': 'available',
+                'limit': 0,
             }
             db.users.insert_one(user_data)
             logger.info("Admin user created!")
@@ -97,6 +98,18 @@ def mongo_user_find_uname(username):
         return doc
     except Exception as e:
         logger.error(f"Error querying user by username: {e}")
+        return None
+
+def mongo_user_find_line(line):
+    """Find a user document by username."""
+    try:
+        mongoClient = get_mongo_client()
+        db = mongoClient.db
+        doc = db.users.find_one({"line": line})
+        logger.info(f"Queried user with line: {line}")
+        return doc
+    except Exception as e:
+        logger.error(f"Error querying user by line: {e}")
         return None
 
 def mongo_user_find_id(user_id):
@@ -218,7 +231,7 @@ def mongo_license_plate_delete(plate, user_id=None):
         db = mongoClient.db
         query = {"plate": plate}
         if user_id:
-            query["user_id"] = user_id  # Add user_id to query for precise matching
+            query["line"] = user_id  # Add user_id to query for precise matching
         result = db.license_plates.delete_one(query)
         if result.deleted_count > 0:
             logger.info(f"License plate '{plate}' deleted successfully.")

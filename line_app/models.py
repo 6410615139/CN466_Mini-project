@@ -1,7 +1,7 @@
 import logging
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
-from utils.mongodb import mongo_user_find_uname, mongo_user_find_id, mongo_license_plate_find, mongo_license_plate_insert, mongo_license_plate_delete
+from utils.mongodb import mongo_user_find_uname, mongo_user_find_id, mongo_license_plate_find, mongo_license_plate_insert, mongo_license_plate_delete, mongo_user_create
 from bson import ObjectId
 
 # Configure logging
@@ -13,13 +13,14 @@ logging.basicConfig(
 logger = logging.getLogger()
 
 class User(UserMixin):
-    def __init__(self, user_id, is_admin, username, password, parking_status=False):
-        self.id = user_id
-        self.is_admin = bool(is_admin)
-        self.username = username
-        self.password = password
-        self.parking_status = bool(parking_status)
-        logger.info(f"Initialized User object for username: {username}")
+    def __init__(self, user_data):
+        """Initialize the User object using a dictionary of user data."""
+        self.line = user_data.get('line')
+        self.username = user_data.get('username')
+        self.pic = user_data.get('pic')
+        self.is_admin = bool(user_data.get('is_admin', False))
+        self.limit = user_data.get('limit', 0)
+        logger.info(f"Initialized User object for username: {self.username}")
 
     @classmethod
     def get_user_by_username(cls, username):
@@ -56,14 +57,24 @@ class User(UserMixin):
         logger.debug(f"Returning ID for user '{self.username}': {self.id}")
         return self.id  # Return self.id for Flask-Login compatibility
 
-    def check_password(self, password):
-        """Check the hashed password."""
-        result = check_password_hash(self.password, password)
-        if result:
-            logger.info(f"Password check for user '{self.username}' succeeded.")
-        else:
-            logger.warning(f"Password check for user '{self.username}' failed.")
-        return result
+    def get_user_data(self):
+        """Return the user data dictionary."""
+        return {
+            'line': self.line,
+            'username': self.username,
+            'pic': self.pic,
+            'is_admin': self.is_admin,
+            'limit': self.limit,
+        }
+
+    def create_user(self):
+        """Create the user in the database using the user data."""
+        user_data = self.get_user_data()
+        try:
+            mongo_user_create(user_data)
+            logger.info(f"User '{self.username}' created successfully.")
+        except Exception as e:
+            logger.error(f"Error creating user '{self.username}': {e}")
 
 
 class LicensePlate:
