@@ -183,7 +183,6 @@ def command_lp(event):
             else:
                 reply_text = "Please provide a valid license plate number after '#lp remove <lp>'."
 
-        
         elif command == "list":
             lps = user.find_plate()
             if lps:
