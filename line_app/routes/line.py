@@ -29,8 +29,6 @@ from linebot.v3.webhooks import (
     TextMessageContent
 )
 
-# from utils.mongodb import mongo_history_insert
-from utils.mongodb import mongo_user_find_line, mongo_license_plate_insert, mongo_license_plate_delete, mongo_license_plate_find
 from models import User
 
 line_blueprint = Blueprint('line', __name__)
@@ -94,7 +92,7 @@ def collect_user_command(event):
 
 def exist_user(event):
     user_id = event.source.user_id
-    exist = mongo_user_find_line(user_id)
+    exist = User.get_user_by_line_id(user_id)
     if exist:
         return True
     else:
@@ -142,7 +140,7 @@ def command_else(event):
 
 def command_profile(event):
     user_message = event.message.text
-    user_data = mongo_user_find_line(event.source.user_id)
+    user_data = User.get_user_by_line_id(event.source.user_id).get_user_data()
     if user_data:
         if user_message == "#create_user":
             reply_text = f"User already created...\n\n"
@@ -166,46 +164,28 @@ def command_profile(event):
 
 def command_lp(event):
     user_message = event.message.text
-    user_data = mongo_user_find_line(event.source.user_id)
+    user = User.get_user_by_line_id(event.source.user_id)
+    user_data = user.get_user_data()
+    
     if user_data:
         command = user_message.split(" ")[1]
         if command == "add":
             plate_number = user_message.split(" ")[2]
             if plate_number:
-                plate_data = {
-                    "line": user_data['line'],
-                    "plate": plate_number,
-                    "status": False
-                }
-                result = mongo_license_plate_insert(plate_data)
-                if result:
-                    reply_text = f"License plate {plate_number} has been added to your account."
-                else:
-                    reply_text = "There was an error adding the license plate. Please try again."
+                lp = user.add_plate(plate_number)
             else:
                 reply_text = "Please provide a valid license plate number after '#lp add <lp>'."
         
         elif command == "remove":
             plate_number = user_message.split(" ")[2]
             if plate_number:
-                # Ensure the plate is associated with the user's line_id before removing
-                plate_data = mongo_license_plate_find({"line": user_data['line'], "plate": plate_number})
-                
-                if plate_data:
-                    # Proceed with deletion if the plate exists for this user
-                    result = mongo_license_plate_delete(plate_number, user_id=user_data['line'])
-                    if result:
-                        reply_text = f"License plate {plate_number} has been removed from your account."
-                    else:
-                        reply_text = f"Error removing license plate {plate_number}. Please try again."
-                else:
-                    reply_text = f"License plate {plate_number} not found or is not associated with your account."
+                plate_data = user.remove_plate(plate_number)
             else:
                 reply_text = "Please provide a valid license plate number after '#lp remove <lp>'."
 
         
         elif command == "list":
-            lps = mongo_license_plate_find({"line": user_data['line']})
+            lps = user.find_plate()
             if lps:
                 reply_text = "License Plates associated with your account:\n"
                 for lp in lps:
@@ -225,6 +205,7 @@ def command_lp(event):
                 messages=[TextMessage(text=reply_text)]
             )
         )
+
 
 def command_liff(event):
     reply_text = "https://liff.line.me/2006527692-bk9DWq73"

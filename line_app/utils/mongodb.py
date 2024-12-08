@@ -242,3 +242,26 @@ def mongo_license_plate_delete(plate, user_id=None):
     except Exception as e:
         logger.error(f"Error deleting license plate: {e}")
         return False
+
+    def mongo_license_plate_update(plate, update_data, user_id=None):
+        """Update a license plate in the database."""
+        mongoClient = get_mongo_client()
+        try:
+            db = mongoClient.db
+            query = {"plate": plate}
+            
+            if user_id:
+                query["line"] = user_id
+            
+            # Use update_one for a single match
+            result = db.license_plates.update_one(query, {"$set": update_data})
+            
+            if result.matched_count > 0:
+                logger.info(f"License plate '{plate}' updated successfully.")
+                return True
+            else:
+                logger.warning(f"License plate '{plate}' not found.")
+                return False
+        except Exception as e:
+            logger.error(f"Error updating license plate: {e}")
+            return False

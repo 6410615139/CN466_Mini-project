@@ -6,10 +6,12 @@ load_dotenv()
 import glob
 import uuid
 import time
-from flask import Blueprint, request, jsonify, send_from_directory, render_template, Response
 import paho.mqtt.client as mqtt
 import threading
+import subprocess
 from io import BytesIO
+from flask import Blueprint, request, jsonify, send_from_directory, render_template, Response
+from utils.mongodb import mongo_license_plate_find
 
 inimage_blueprint = Blueprint('inimage', __name__)
 
@@ -33,6 +35,24 @@ mqtt_client.on_message = on_message
 mqtt_client.subscribe(mqtt_topic)
 mqtt_client.loop_start()
 
+def check_lp():
+    try:
+        result = subprocess.run(
+            ["python", "../utils/ai.py"],
+            text=True,
+            capture_output=True,
+            check=True
+        )
+        output = result.stdout
+
+    except subprocess.CalledProcessError as e:
+        return jsonify({"error": f"Error executing AI script: {e}"}), 500
+
+    plate_data = mongo_license_plate_find({"plate": output})
+    if plate_data:
+        lp = LicensePlate(plate_data)
+        lp.set_status(True)
+
 @inimage_blueprint.route("/video", methods=["POST"])
 def receive_frame():
     if 'file' not in request.files:
@@ -53,6 +73,8 @@ def receive_frame():
                 f.write(file.read())
             if not os.path.exists(image_file):
                 return jsonify({"error": "Failed to save the image file"}), 500
+            else:
+                output = check_lp()
             return jsonify({"message": "Frame received successfully", "file": image_file}), 200
     except Exception as e:
         return jsonify({"error": f"Error processing frame: {e}"}), 500
