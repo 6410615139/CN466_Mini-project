@@ -40,7 +40,7 @@ def create_admin_user():
                 'username': "admin",
                 'pic': "",
                 'is_admin': True,
-                'limit': 0,
+                'limit': 9999,
             }
             db.users.insert_one(user_data)
             logger.info("Admin user created!")
