@@ -145,6 +145,20 @@ class LicensePlate:
         logger.info(f"Initialized LicensePlate object for plate: {self.plate}")
 
     @classmethod
+    def find_plate(plate_number):
+        """Find a license plate by plate number."""
+        try:
+            logger.info(f"Attempting to fetch license plate: {plate_number}")
+            plate_data = mongo_license_plate_find({'plate': plate_number})
+            if plate_data:
+                logger.info(f"License plate '{plate_number}' found in database.")
+                return cls(plate_data)
+            logger.warning(f"License plate '{plate_number}' not found in database.")
+        except Exception as e:
+            logger.error(f"Error fetching license plate '{plate_number}': {e}")
+        return None
+
+    @classmethod
     def find_plate_line(line):
         """Find a license plate by line."""
         try:
