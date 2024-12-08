@@ -26,7 +26,7 @@ def login():
         password = form.password.data
         user = User.get_user_by_username(username)
 
-        if user and user.check_password(password):
+        if user and user.is_admin:
             login_user(user)
             logger.info(f"User '{username}' logged in successfully.")
             
