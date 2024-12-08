@@ -12,6 +12,7 @@ app = Flask(__name__)
 
 # Set Flask secret key from environment variable or default
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
+# app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
 
 # Initialize Flask-Login
 login_manager = LoginManager()
@@ -19,7 +20,6 @@ login_manager.init_app(app)
 login_manager.login_view = 'auth.login'
 
 create_admin_user()
-
 
 # Import blueprints
 from routes.auth import auth_blueprint
@@ -33,7 +33,7 @@ from routes.line_auth import line_auth_blueprint
 app.register_blueprint(home_blueprint)
 app.register_blueprint(auth_blueprint, url_prefix='/auth')
 app.register_blueprint(admin_blueprint, url_prefix='/admin')
-app.register_blueprint(inbound_image, url_prefix='/inimage')
+app.register_blueprint(inimage_blueprint, url_prefix='/inimage')
 app.register_blueprint(line_blueprint, url_prefix='/line')
 app.register_blueprint(line_auth_blueprint, url_prefix='/line_auth')
 
