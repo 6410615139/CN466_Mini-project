@@ -11,16 +11,18 @@ static uint8_t* image_buf = nullptr;
 
 int lastIRState = LOW;
 
-const char* ssid = "Khaw_cafe_2.4GHz";
-const char* password = "commontu88";
+// const char* ssid = "Khaw_cafe_2.4GHz";
+// const char* password = "commontu88";
+const char* ssid = "Nit_2.4";
+const char* password = "0814038562";
 
 const char* mqttServer = "mqtt.eclipseprojects.io";
 const int mqttPort = 1883;
 const char* mqttCommandTopic = "/flask/message";
-const char* mqttCameraTopic = "/gate1/inbound/camera";
+const char* mqttCameraTopic = "/inbound/gate1";
 
-const char* uploadPath = "https://x6897clx-5002.asse.devtunnels.ms/image/upload_image";
-const char* videoPath = "https://x6897clx-5002.asse.devtunnels.ms/image/video";
+const char* uploadPath = "https://6n8xrbwf-5002.asse.devtunnels.ms/inimage/upload_image";
+const char* videoPath = "https://6n8xrbwf-5002.asse.devtunnels.ms/inimage/video";
 
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
@@ -105,7 +107,7 @@ void captureAndUploadImage(const char* url) {
     int image_size = cam_dev_snapshot(image_buf);
     if (image_size > 0) {
         HTTPClient http;
-        clientSecure.setInsecure();
+        clientSecure.setCACert(certificate);
         http.begin(clientSecure, url);
         http.setTimeout(5000);
         String boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW";

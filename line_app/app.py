@@ -26,6 +26,7 @@ from routes.auth import auth_blueprint
 from routes.admin import admin_blueprint
 from routes.home import home_blueprint
 from routes.inbound_image import inimage_blueprint
+# from routes.image import image_blueprint
 from routes.line import line_blueprint
 from routes.line_auth import line_auth_blueprint
 
@@ -33,6 +34,7 @@ from routes.line_auth import line_auth_blueprint
 app.register_blueprint(home_blueprint)
 app.register_blueprint(auth_blueprint, url_prefix='/auth')
 app.register_blueprint(admin_blueprint, url_prefix='/admin')
+# app.register_blueprint(image_blueprint, url_prefix='/inimage')
 app.register_blueprint(inimage_blueprint, url_prefix='/inimage')
 app.register_blueprint(line_blueprint, url_prefix='/line')
 app.register_blueprint(line_auth_blueprint, url_prefix='/line_auth')
