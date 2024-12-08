@@ -22,6 +22,7 @@
                 {% if current_user.is_admin %}
                 <a href="{{ url_for('admin.dashboard') }}">Dashboard</a> |
                 {% endif %}
+                <a href="{{ url_for('home.index') }}">Home</a> |
                 <a href="{{ url_for('auth.logout') }}">Logout</a>
             </p>
         {% else %}

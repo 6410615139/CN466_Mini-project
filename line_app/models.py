@@ -1,7 +1,7 @@
 import logging
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
-from utils.mongodb import mongo_user_find_uname, mongo_user_find_id, mongo_license_plate_find, mongo_license_plate_insert, mongo_license_plate_delete, mongo_user_create
+from utils.mongodb import mongo_user_find_uname, mongo_user_find_id, mongo_license_plate_find, mongo_license_plate_insert, mongo_license_plate_delete, mongo_user_create, mongo_user_find_line
 from bson import ObjectId
 
 # Configure logging
@@ -15,6 +15,7 @@ logger = logging.getLogger()
 class User(UserMixin):
     def __init__(self, user_data):
         """Initialize the User object using a dictionary of user data."""
+        self.id = str(user_data.get('_id'))
         self.line = user_data.get('line')
         self.username = user_data.get('username')
         self.pic = user_data.get('pic')
@@ -28,10 +29,7 @@ class User(UserMixin):
         user_data = mongo_user_find_uname(username)
         if user_data:
             logger.info(f"User '{username}' found in database.")
-            return cls(user_id=str(user_data['_id']),
-                       is_admin=user_data['is_admin'],
-                       username=user_data['username'],
-                       password=user_data['password'])
+            return cls(user_data)
         logger.warning(f"User '{username}' not found in database.")
         return None
 
@@ -44,13 +42,25 @@ class User(UserMixin):
             user_data = mongo_user_find_id(user_id)
             if user_data:
                 logger.info(f"User with ID '{user_id}' found in database.")
-                return cls(user_id=str(user_data['_id']),
-                           is_admin=user_data['is_admin'],
-                           username=user_data['username'],
-                           password=user_data['password'])
+                return cls(user_data)
             logger.warning(f"User with ID '{user_id}' not found in database.")
         except Exception as e:
             logger.error(f"Error fetching user by ID '{user_id}': {e}")
+        return None
+    
+    @classmethod
+    def get_user_by_line_id(cls, line_id):
+        """Get a user by their LINE ID."""
+        try:
+            logger.info(f"Attempting to fetch user by LINE ID: {line_id}")
+            # Query the database for a user with the given LINE ID
+            user_data = mongo_user_find_line(line_id)
+            if user_data:
+                logger.info(f"User with LINE ID '{line_id}' found in database.")
+                return cls(user_data)
+            logger.warning(f"User with LINE ID '{line_id}' not found in database.")
+        except Exception as e:
+            logger.error(f"Error fetching user by LINE ID '{line_id}': {e}")
         return None
 
     def get_id(self):

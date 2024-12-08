@@ -22,6 +22,27 @@
         </div>
     </form>
 
+    <hr>
+
+    <div>
+        <a href="{{ url_for('line_auth.login') }}">Login via Line</a>
+    </div>
+
+    <hr>
+
+    <div class="email-consent">
+        <h3>This app requests access to your email address</h3>
+        <ul>
+            <li>Your email will be used for account verification, notifications, and personalization.</li>
+            <li>We will never share your email without your consent.</li>
+        </ul>
+        <p>By continuing, you agree to our 
+            <a href="/terms-of-service" target="_blank">Terms of Service</a> and 
+            <a href="/privacy-policy" target="_blank">Privacy Policy</a>.
+        </p>
+        <button type="button" class="consent-button">Continue</button>
+    </div>
+
     <!-- Display flash messages if any -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}

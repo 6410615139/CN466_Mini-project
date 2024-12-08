@@ -86,14 +86,35 @@
 <p><a href="{{ url_for('admin.add_user') }}">Add new user</a></p>
 
 <h2>Users List:</h2>
+
+<!-- Filter Controls -->
 <div class="table-container">
-    <table class="ons-table">
+    <label for="searchInput">Search Users:</label>
+    <input type="text" id="searchInput" placeholder="Search by username, status, or license plate..." onkeyup="searchTable()">
+</div>
+
+<div class="table-container">
+    <table class="ons-table" id="usersTable">
         <thead>
             <tr>
                 <th>Username</th>
                 <th>Password</th>
-                <th>Is Admin</th>
-                <th>Parking Status</th>
+                <th>
+                    Is Admin
+                    <select id="adminFilter" onchange="filterByAdminStatus()">
+                        <option value="all">All</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </th>
+                <th>
+                    Parking Status
+                    <select id="parkingFilter" onchange="filterByParkingStatus()">
+                        <option value="all">All</option>
+                        <option value="Parked">Parked</option>
+                        <option value="Free">Free</option>
+                    </select>
+                </th>
                 <th>License Plates</th>
                 <th>Actions</th>
             </tr>
@@ -122,39 +143,59 @@
     </table>
 </div>
 
-<!-- Edit User Modal -->
-<div id="editModal" class="modal">
-    <div class="modal-content">
-        <h3>Edit User</h3>
-        <form id="editForm">
-            <div class="form-group">
-                <label for="editUsername">Username</label>
-                <input type="text" id="editUsername" name="username">
-            </div>
-            <div class="form-group">
-                <label for="editPassword">Password</label>
-                <input type="password" id="editPassword" name="password">
-            </div>
-            <div class="form-group">
-                <label for="editIsAdmin">Is Admin</label>
-                <input type="checkbox" id="editIsAdmin" name="is_admin">
-            </div>
-            <div class="form-group">
-                <label for="editParkingStatus">Parking Status</label>
-                <select id="editParkingStatus" name="parking_status">
-                    <option value="available">Available</option>
-                    <option value="parking">Parking</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="editLicensePlate">License Plate</label>
-                <input type="text" id="editLicensePlate" name="license_plate">
-            </div>
-            <button type="button" class="btn btn-save" onclick="submitEdit()">Save</button>
-            <button type="button" class="btn btn-cancel" onclick="closeEditModal()">Cancel</button>
-        </form>
-    </div>
-</div>
+<script>
+    // Search Table Functionality
+    function searchTable() {
+        const input = document.getElementById('searchInput');
+        const filter = input.value.toLowerCase();
+        const table = document.getElementById('usersTable');
+        const rows = table.getElementsByTagName('tr');
 
-<script src="/static/admin_dashboard.js"></script>
+        for (let i = 1; i < rows.length; i++) { // Skip header row
+            const cells = rows[i].getElementsByTagName('td');
+            let match = false;
+
+            for (let j = 0; j < cells.length; j++) {
+                if (cells[j] && cells[j].textContent.toLowerCase().indexOf(filter) > -1) {
+                    match = true;
+                    break;
+                }
+            }
+
+            rows[i].style.display = match ? '' : 'none';
+        }
+    }
+
+    // Filter by Admin Status
+    function filterByAdminStatus() {
+        const filter = document.getElementById('adminFilter').value.toLowerCase();
+        const table = document.getElementById('usersTable');
+        const rows = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < rows.length; i++) { // Skip header row
+            const cell = rows[i].getElementsByTagName('td')[2]; // Admin status column
+            if (filter === 'all' || (cell && cell.textContent.toLowerCase() === filter)) {
+                rows[i].style.display = '';
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    }
+
+    // Filter by Parking Status
+    function filterByParkingStatus() {
+        const filter = document.getElementById('parkingFilter').value.toLowerCase();
+        const table = document.getElementById('usersTable');
+        const rows = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < rows.length; i++) { // Skip header row
+            const cell = rows[i].getElementsByTagName('td')[3]; // Parking status column
+            if (filter === 'all' || (cell && cell.textContent.toLowerCase() === filter)) {
+                rows[i].style.display = '';
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    }
+</script>
 {% endblock %}
