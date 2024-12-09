@@ -45,7 +45,7 @@ def check_lp():
     lp = LicensePlate.find_plate(plate_number)
     lp.set_status(False)
 
-@inimage_blueprint.route("/video", methods=["POST"])
+@outimage_blueprint.route("/video", methods=["POST"])
 def receive_frame():
     if 'file' not in request.files:
         return jsonify({"error": "No file part"}), 400
