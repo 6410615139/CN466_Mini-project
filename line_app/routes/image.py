@@ -40,17 +40,17 @@ def on_message(client, userdata, msg):
     
     payload = msg.payload.decode('utf-8')  # Decode message to string
     
-    if payload == "enable":
+    if payload == "car":
         print("Received 'car' message. Storing images in current folder.")
         # No changes needed to UUID; we continue to use the current folder
-    elif payload == "disable":
+    elif payload == "free":
         # Change the folder UUID when the state transitions to "free"
         print("Received 'free' message. Changing image storage folder.")
         current_folder_uuid = str(uuid.uuid4())  # Assign a new UUID for the folder
 
 # Subscribe to the '/flask/car' topic
 mqtt_client.on_message = on_message
-mqtt_client.subscribe("/inbound/gate1")
+mqtt_client.subscribe("/flask/car")
 
 # Start MQTT client loop in the background
 mqtt_client.loop_start()

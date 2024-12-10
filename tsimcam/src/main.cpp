@@ -125,9 +125,15 @@ void captureAndUploadImage(const char* url) {
         if (httpResponseCode > 0) {
             Serial.print("Image upload successful, HTTP response code: ");
             Serial.println(httpResponseCode);
+            String response = http.getString();  // Get the response body
+            Serial.print("Response message: ");
+            Serial.println(response);
         } else {
             Serial.print("Error on image upload, code: ");
             Serial.println(httpResponseCode);
+            String response = http.getString();  // Try to fetch any error message
+            Serial.print("Error response message: ");
+            Serial.println(response);
         }
         free(body);
         http.end();

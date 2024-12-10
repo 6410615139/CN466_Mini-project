@@ -12,7 +12,6 @@ app = Flask(__name__)
 
 # Set Flask secret key from environment variable or default
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
-# app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
 
 # Initialize Flask-Login
 login_manager = LoginManager()
@@ -20,6 +19,7 @@ login_manager.init_app(app)
 login_manager.login_view = 'auth.login'
 
 create_admin_user()
+
 
 # Import blueprints
 from routes.auth import auth_blueprint

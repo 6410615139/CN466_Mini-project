@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
 import logging
 from bson import ObjectId
+from datetime import datetime
 
 load_dotenv()
 
@@ -205,11 +206,33 @@ def mongo_license_plate_find(query):
     mongoClient = get_mongo_client()
     try:
         db = mongoClient.db
-        results = list(db.license_plates.find(query))
-        return results if results else []  # Return an empty list if no results
+        results = db.license_plates.find(query)
+        return results if results else []
     except Exception as e:
         logger.error(f"Error querying license plates: {e}")
-        return []  # Ensure an empty list is returned in case of an error
+        return []
+
+def mongo_license_plate_find_line(line):
+    """Find license plates associated with a user."""
+    mongoClient = get_mongo_client()
+    try:
+        db = mongoClient.db
+        results = list(db.license_plates.find({'line': line}))
+        return results if results else []
+    except Exception as e:
+        logger.error(f"Error querying license plates by user: {e}")
+        return []  # Return an empty list in case of an error (or no results:
+
+def mongo_license_plate_find_plate(plate):
+    """Find a license plate by its plate number."""
+    mongoClient = get_mongo_client()
+    try:
+        db = mongoClient.db
+        result = db.license_plates.find_one({'plate': plate})
+        return result if result else None
+    except Exception as e:
+        logger.error(f"Error querying license plate by plate number: {e}")
+        return None
 
 def mongo_license_plate_insert(plate_data):
     """Insert a new license plate into the database."""
@@ -243,25 +266,64 @@ def mongo_license_plate_delete(plate, user_id=None):
         logger.error(f"Error deleting license plate: {e}")
         return False
 
-    def mongo_license_plate_update(plate, update_data, user_id=None):
-        """Update a license plate in the database."""
-        mongoClient = get_mongo_client()
-        try:
-            db = mongoClient.db
-            query = {"plate": plate}
-            
-            if user_id:
-                query["line"] = user_id
-            
-            # Use update_one for a single match
-            result = db.license_plates.update_one(query, {"$set": update_data})
-            
-            if result.matched_count > 0:
-                logger.info(f"License plate '{plate}' updated successfully.")
-                return True
-            else:
-                logger.warning(f"License plate '{plate}' not found.")
-                return False
-        except Exception as e:
-            logger.error(f"Error updating license plate: {e}")
+def mongo_license_plate_update_status(plate_number, status):
+    """Update the status of a license plate."""
+    mongoClient = get_mongo_client()
+    try:
+        db = mongoClient.db
+        result = db.license_plates.update_one(
+            {"plate": plate_number},
+            {"$set": {"status": status}}
+        )
+        if result.modified_count > 0:
+            logger.info(f"Status of license plate '{plate_number}' updated to {status}")
+            return True
+        else:
+            logger.warning(f"No matching document found for license plate '{plate_number}'")
             return False
+    except Exception as e:
+        logger.error(f"Error updating license plate status: {e}")
+        return False
+
+# --- PARKING FUNCTIONS ---
+
+def mongo_parking_history(query):
+    """Find parking history matching a query."""
+    mongoClient = get_mongo_client()
+    try:
+        db = mongoClient.db
+        results = list(db.parking_history.find(query))
+        return results if results else []  # Return an empty list if no results
+    except Exception as e:
+        logger.error(f"Error querying parking history: {e}")
+        return []  # Ensure an empty list is returned in case of an error
+
+def mongo_parking_inbound(plate_number):
+    """Insert a new parking history document."""
+    try:
+        mongoClient = get_mongo_client()
+        db = mongoClient.db
+        db.parking_history.insert_one(
+            {"plate": plate_number, "inbound": datetime.now().isoformat(), "outbound": None}
+        )
+        logger.info(f"Inbound timestamp inserted for plate: {plate_number}")
+    except Exception as e:
+        logger.error(f"Error inserting inbound timestamp: {e}")
+
+def mongo_parking_outbound(plate_number):
+    """Update the outbound timestamp for a parking history document."""
+    try:
+        mongoClient = get_mongo_client()
+        db = mongoClient.db
+        result = db.parking_history.update_one(
+            {"plate": plate_number, "outbound": None},
+            {"$set": {"outbound": datetime.now().isoformat()}}
+        )
+        if result.modified_count > 0:
+            logger.info(f"Outbound timestamp updated for plate: {plate_number}")
+        else:
+            logger.warning(f"No matching document found for outbound update: {plate_number}")
+    except Exception as e:
+        logger.error(f"Error updating outbound timestamp: {e}")
+    
+    

@@ -84,7 +84,7 @@ def collect_user_command(event):
     user_data = {
         'user_id': user_id,
         'timestamp': format_time ,
-        'name': display_name,
+        'username': display_name,
         'picture': pic_url,
         'command': user_message
     }
@@ -108,7 +108,7 @@ def create_user(event):
         'username': display_name,
         'pic': pic,
         'is_admin': False,
-        'limit': 2,
+        'limit': 9999,
     }
     user = User(userdata)
     user.create_user()
@@ -166,36 +166,41 @@ def command_lp(event):
     user_message = event.message.text
     user = User.get_user_by_line_id(event.source.user_id)
     user_data = user.get_user_data()
+    reply_text = "Invalid command. Use #lp add <plate_number>, #lp remove <plate_number>, or #lp list."  # Default reply text
     
     if user_data:
-        command = user_message.split(" ")[1]
-        if command == "add":
-            plate_number = user_message.split(" ")[2]
-            if plate_number:
-                lp = user.add_plate(plate_number)
-            else:
-                reply_text = "Please provide a valid license plate number after '#lp add <lp>'."
-        
-        elif command == "remove":
-            plate_number = user_message.split(" ")[2]
-            if plate_number:
-                plate_data = user.remove_plate(plate_number)
-            else:
-                reply_text = "Please provide a valid license plate number after '#lp remove <lp>'."
-
-        elif command == "list":
-            lps = user.find_plate()
-            if lps:
-                reply_text = "License Plates associated with your account:\n"
-                for lp in lps:
-                    reply_text += f"- {lp['plate']}\n"
-            else:
-                reply_text = "No license plates found for your account."
+        command_parts = user_message.split(" ", 2)  # Split into at most 3 parts
+        if len(command_parts) < 2:
+            reply_text = "Invalid command format. Use #lp add <plate_number>, #lp remove <plate_number>, or #lp list."
         else:
-            reply_text = "Invalid command. Use #lp add <plate_number>, #lp remove <plate_number>, or #lp list."
+            command = command_parts[1].lower()  # Normalize the command to lowercase
+
+            if command == "add":
+                if len(command_parts) == 3:
+                    plate_number = command_parts[2]
+                    reply_text = user.add_plate(plate_number)
+                else:
+                    reply_text = "Please provide a valid license plate number after '#lp add <lp>'."
+
+            elif command == "remove":
+                if len(command_parts) == 3:
+                    plate_number = command_parts[2]
+                    reply_text = user.remove_plate(plate_number)
+                else:
+                    reply_text = "Please provide a valid license plate number after '#lp remove <lp>'."
+
+            elif command == "list":
+                lps = user.find_plate()
+                if lps:
+                    reply_text = "License Plates associated with your account:\n"
+                    reply_text += "\n".join(f"- {lp['plate']}, status: {lp['status']}" for lp in lps)
+                else:
+                    reply_text = "No license plates found for your account."
+
     else:
         reply_text = "User profile not found."
 
+    # Send reply
     with ApiClient(configuration) as api_client:
         line_bot_api = MessagingApi(api_client)
         line_bot_api.reply_message_with_http_info(

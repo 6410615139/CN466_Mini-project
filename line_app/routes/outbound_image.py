@@ -14,7 +14,7 @@ from models import LicensePlate
 
 outimage_blueprint = Blueprint('outimage', __name__)
 
-IMAGE_DIR = "./images/outbound/"
+IMAGE_DIR = "./images/outbound/gate1"
 os.makedirs(IMAGE_DIR, exist_ok=True)
 latest_image = None
 latest_frame = BytesIO()
@@ -34,18 +34,23 @@ mqtt_client.on_message = on_message
 mqtt_client.subscribe(mqtt_topic)
 mqtt_client.loop_start()
 
-def check_lp():
-    plate_number = subprocess.run(
-        ["python", "../utils/ai.py"],
+def check_lp(image_file):
+    result = subprocess.run(
+        ["python", "utils/ai.py", "-p", image_file],
         text=True,
         capture_output=True,
         check=True
-    ).stdout
-
+    )
+    plate_number = result.stdout.strip().split('\n')[0]
     lp = LicensePlate.find_plate(plate_number)
-    lp.set_status(False)
+    result = lp.set_status(False)
+    if result:
+        mqtt_client.publish("/outbound/gate1", "detected")
+        return jsonify({"message": "License plate detected", "plate_number": plate_number}), 200
+    else:
+        return jsonify({"error": "Failed to update license plate status"}), 500
 
-@inimage_blueprint.route("/video", methods=["POST"])
+@outimage_blueprint.route("/video", methods=["POST"])
 def receive_frame():
     if 'file' not in request.files:
         return jsonify({"error": "No file part"}), 400
@@ -66,7 +71,7 @@ def receive_frame():
             if not os.path.exists(image_file):
                 return jsonify({"error": "Failed to save the image file"}), 500
             else:
-                output = check_lp()
+                output = check_lp(image_file)
             return jsonify({"message": "Frame received successfully", "file": image_file}), 200
     except Exception as e:
         return jsonify({"error": f"Error processing frame: {e}"}), 500

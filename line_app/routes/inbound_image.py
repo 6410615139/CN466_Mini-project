@@ -14,7 +14,7 @@ from models import LicensePlate
 
 inimage_blueprint = Blueprint('inimage', __name__)
 
-IMAGE_DIR = "./images/inbound/"
+IMAGE_DIR = "./images/inbound/gate1"
 os.makedirs(IMAGE_DIR, exist_ok=True)
 latest_image = None
 latest_frame = BytesIO()
@@ -34,16 +34,41 @@ mqtt_client.on_message = on_message
 mqtt_client.subscribe(mqtt_topic)
 mqtt_client.loop_start()
 
-def check_lp():
-    plate_number = subprocess.run(
-        ["python", "../utils/ai.py"],
-        text=True,
-        capture_output=True,
-        check=True
-    ).stdout
+def check_lp(image_file):
+    try:
+        # Run the ai.py script to analyze the image
+        result = subprocess.run(
+            ["python", "utils/ai.py", "-p", image_file],
+            text=True,
+            capture_output=True,
+            check=True
+        )
 
-    lp = LicensePlate.find_plate(plate_number)
-    lp.set_status(True)
+        # Capture the output of ai.py
+        plate_number = result.stdout.strip().split('\n')[0]
+        if not plate_number:
+            return jsonify({"error": "No license plate detected in the image."}), 400
+
+        # Find the license plate in the database
+        lp = LicensePlate.find_plate(plate_number)
+        if lp is None:
+            return jsonify({"error": f"License plate '{plate_number}' not found in the database."}), 404
+
+        # Update the license plate status
+        if lp.set_status(True):
+            mqtt_client.publish("/inbound/gate1", "disable")
+            return jsonify({
+                "message": "License plate detected and updated successfully.",
+                "plate_number": plate_number
+            }), 200
+        else:
+            return jsonify({"error": "Failed to update license plate status."}), 500
+
+    except subprocess.CalledProcessError as e:
+        return jsonify({"error": f"Error running ai.py: {e.stderr}"}), 500
+
+    except Exception as e:
+        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
 @inimage_blueprint.route("/video", methods=["POST"])
 def receive_frame():
@@ -65,8 +90,6 @@ def receive_frame():
                 f.write(file.read())
             if not os.path.exists(image_file):
                 return jsonify({"error": "Failed to save the image file"}), 500
-            else:
-                output = check_lp()
-            return jsonify({"message": "Frame received successfully", "file": image_file}), 200
+            return check_lp(image_file)
     except Exception as e:
         return jsonify({"error": f"Error processing frame: {e}"}), 500
