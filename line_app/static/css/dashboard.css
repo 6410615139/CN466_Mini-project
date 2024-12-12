@@ -1,0 +1,154 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+}
+
+h1.table-title {
+    text-align: center;
+    font-size: 2rem;
+    color: #333;
+    margin: 20px 0;
+}
+
+p {
+    text-align: center;
+}
+
+/* Table Styles */
+.table-container {
+    width: 90%;
+    margin: 20px auto;
+    overflow-x: auto;
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+table.ons-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+table.ons-table th,
+table.ons-table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+}
+
+table.ons-table th {
+    background-color: #007bff;
+    color: #fff;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+table.ons-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+table.ons-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Button Styles */
+.btn-add-user,
+.btn-edit-user,
+.btn-delete {
+    display: inline-block;
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+}
+
+.btn-add-user {
+    background-color: #28a745;
+    color: #fff;
+    margin: 10px auto;
+    display: block;
+    width: fit-content;
+}
+
+.btn-add-user:hover {
+    background-color: #218838;
+}
+
+.btn-edit-user {
+    background-color: #ffc107;
+    color: #fff;
+    margin-right: 10px;
+}
+
+.btn-edit-user:hover {
+    background-color: #e0a800;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.btn-delete:hover {
+    background-color: #c82333;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    table.ons-table th,
+    table.ons-table td {
+        padding: 10px 8px;
+        font-size: 0.9rem;
+    }
+
+    input#searchInput {
+        font-size: 0.9rem;
+    }
+}
+
+/* Action Buttons Inline */
+td > p, td > button {
+    display: inline-block; /* Align items inline */
+    margin: 0 5px; /* Add spacing between buttons */
+    vertical-align: middle; /* Align vertically */
+}
+
+.btn-edit-user, .btn-delete {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+/* Edit Button */
+.btn-edit-user {
+    background-color: #ffc107;
+    color: #fff;
+}
+
+.btn-edit-user:hover {
+    background-color: #e0a800;
+}
+
+/* Delete Button */
+.btn-delete {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+}
+
+.btn-delete:hover {
+    background-color: #c82333;
+}

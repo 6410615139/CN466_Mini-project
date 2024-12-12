@@ -86,7 +86,7 @@ def line_callback():
         # Extract user information from LINE profile
         line_id = profile_data.get('userId')
         display_name = profile_data.get('displayName')
-        email = profile_data.get('email')  # Requires additional consent from the user
+        # email = profile_data.get('email')  # Requires additional consent from the user
 
         if not line_id:
             logger.error("LINE profile data missing user ID.")
@@ -94,20 +94,18 @@ def line_callback():
             return redirect(url_for('line_auth.login'))
 
         # Check if the user exists in the database
-        user = mongo_user_find_uname(line_id)  # Assuming line_id is stored as the username
+        user = User.get_user_by_line_id(line_id)
+        # user = mongo_user_find_uname(line_id)  # Assuming line_id is stored as the username
 
         if not user:
             # Register the user if they don't exist
-            userdata = {
-                'user_id': line_id,
-                'password': generate_password_hash('default_password', method='pbkdf2:sha256'),
+            user_data = {
+                'line': line_id,
                 'is_admin': False,
-                'parking_status': 'available',
-                'line_id': line_id,
-                'display_name': display_name,
-                'email': email,
+                'username': display_name,
+                'limit': 2,
             }
-            mongo_user_create(userdata)
+            User(user_data).create_user()
             logger.info(f"New user registered via LINE: {line_id}")
 
         # Log the user in

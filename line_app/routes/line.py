@@ -108,7 +108,7 @@ def create_user(event):
         'username': display_name,
         'pic': pic,
         'is_admin': False,
-        'limit': 9999,
+        'limit': 2,
     }
     user = User(userdata)
     user.create_user()

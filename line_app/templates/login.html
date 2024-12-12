@@ -2,7 +2,23 @@
 
 {% block title %}Login - Flask Parking System{% endblock %}
 
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/button.css') }}">
+{% endblock %}
+
 {% block content %}
+<!-- Display flash messages if any -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+    <ul>
+        {% for category, message in messages %}
+            <li class="alert {{ category }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% endwith %}
+
     <h2>Login</h2>
     
     <form method="POST" action="{{ url_for('auth.login') }}">
@@ -24,13 +40,13 @@
 
     <hr>
 
-    <div>
-        <a href="{{ url_for('line_auth.login') }}">Login via Line</a>
-    </div>
+    <div class="center">
+        <a class="line-btn" href="{{ url_for('line_auth.login') }}">Login via Line</a>
+    </div>    
 
     <hr>
 
-    <div class="email-consent">
+    <!-- <div class="email-consent">
         <h3>This app requests access to your email address</h3>
         <ul>
             <li>Your email will be used for account verification, notifications, and personalization.</li>
@@ -41,16 +57,5 @@
             <a href="/privacy-policy" target="_blank">Privacy Policy</a>.
         </p>
         <button type="button" class="consent-button">Continue</button>
-    </div>
-
-    <!-- Display flash messages if any -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <ul>
-                {% for category, message in messages %}
-                    <li class="alert {{ category }}">{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
+    </div> -->
 {% endblock %}

@@ -1,0 +1,176 @@
+/* General Page Styling */
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+/* Center Content */
+form, .email-consent {
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Header Styling */
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #007bff;
+}
+
+/* Form Styling */
+form div {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+button[type="submit"] {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+/* Flash Messages */
+.alert {
+    margin: 15px 0;
+    padding: 10px;
+    border-radius: 4px;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.alert.info {
+    background-color: #007bff;
+}
+
+.alert.success {
+    background-color: #28a745;
+}
+
+.alert.warning {
+    background-color: #ffc107;
+    color: black;
+}
+
+.alert.error {
+    background-color: #dc3545;
+}
+
+/* Line Login Link */
+a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+div hr {
+    border: 1px solid #ddd;
+    margin: 20px 0;
+}
+
+/* Email Consent Section */
+.email-consent {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.email-consent h3 {
+    font-size: 1.2rem;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.email-consent ul {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+    text-align: left;
+}
+
+.email-consent li {
+    padding-left: 20px;
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.email-consent li:before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #007bff;
+}
+
+.email-consent p {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.email-consent a {
+    color: #007bff;
+}
+
+.email-consent a:hover {
+    text-decoration: underline;
+}
+
+.consent-button {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.consent-button:hover {
+    background-color: #0056b3;
+}

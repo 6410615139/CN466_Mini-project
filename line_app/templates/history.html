@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Parking History{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/button.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="header-row">
+    <h1>Parking History</h1>
+</div>
+
+<input type="text" id="searchInput" placeholder="Search by plate, Inbound, or Outbound..." onkeyup="searchTable()">
+
+
+<table class="ons-table" id="usersTable">
+    <thead>
+        <tr>
+            <th>Plate</th>
+            <th>Inbound</th>
+            <th>Outbound</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if history %}
+        {% for parking in history %}
+        <tr>
+            <td>{{ parking['plate'] }}</td>
+            <td>{{ parking['inbound'] | default('None') }}</td>
+            <td>{{ parking['outbound'] | default('None') }}</td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="3" class="no-license-plates">No parking history found.</td>
+        </tr>
+        {% endif %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block js %}
+<script src="{{ url_for('static', filename='js/search_table.js') }}"></script>
+{% endblock %}

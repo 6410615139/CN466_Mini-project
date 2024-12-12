@@ -20,7 +20,6 @@ login_manager.login_view = 'auth.login'
 
 create_admin_user()
 
-
 # Import blueprints
 from routes.auth import auth_blueprint
 from routes.admin import admin_blueprint

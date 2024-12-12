@@ -1,0 +1,146 @@
+/* Button Styling */
+.btn-add, .btn-delete, .btn-submit {
+    border: none;
+    border-radius: 4px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.btn-add {
+    background-color: #aaa;
+    color: white;
+    margin-right: 20px;
+}
+
+.btn-add:hover {
+    background-color: #218838;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-delete:hover {
+    background-color: #a71d2a;
+}
+
+.btn-submit {
+    background-color: #007bff;
+    color: white;
+    margin-top: 10px;
+}
+
+.btn-submit:hover {
+    background-color: #0056b3;
+}
+
+/* Button Styles */
+.btn-add-user,
+.btn-edit-user,
+.btn-delete {
+    display: inline-block;
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+}
+
+.btn-add-user {
+    background-color: #28a745;
+    color: #fff;
+    margin: 10px auto;
+    display: block;
+    width: fit-content;
+}
+
+.btn-add-user:hover {
+    background-color: #218838;
+}
+
+.btn-edit-user {
+    background-color: #ffc107;
+    color: #fff;
+    margin-right: 10px;
+}
+
+.btn-edit-user:hover {
+    background-color: #e0a800;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.btn-delete:hover {
+    background-color: #c82333;
+}
+
+/* Action Buttons Inline */
+td > p, td > button {
+    display: inline-block; /* Align items inline */
+    margin: 0 5px; /* Add spacing between buttons */
+    vertical-align: middle; /* Align vertically */
+}
+
+.btn-edit-user, .btn-delete {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+/* Edit Button */
+.btn-edit-user {
+    background-color: #ffc107;
+    color: #fff;
+}
+
+.btn-edit-user:hover {
+    background-color: #e0a800;
+}
+
+/* Delete Button */
+.btn-delete {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+}
+
+.btn-delete:hover {
+    background-color: #c82333;
+}
+
+.line-btn {
+    display: inline-block;
+    background-color: #00c300; /* Green color */
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.line-btn:hover {
+    background-color: #009a00; /* Darker green on hover */
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}

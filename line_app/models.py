@@ -5,7 +5,8 @@ from bson import ObjectId
 from utils.mongodb import (
     mongo_user_find_uname, 
     mongo_user_find_id,
-    mongo_license_plate_find_line,
+    delete_user_by_id,
+    mongo_license_plate_find_user,
     mongo_license_plate_find_plate,
     mongo_license_plate_insert, 
     mongo_license_plate_delete,
@@ -14,7 +15,9 @@ from utils.mongodb import (
     mongo_user_find_line, 
     update_user_by_id,
     mongo_parking_inbound,
-    mongo_parking_outbound
+    mongo_parking_outbound,
+    get_users_with_license_plates,
+    get_plates_with_user_data
     )
 
 # Configure logging
@@ -76,11 +79,29 @@ class User(UserMixin):
             logger.error(f"Error fetching user by LINE ID '{line_id}': {e}")
         return None
 
+    def delete_user(self):
+        """Delete the user from the database."""
+        try:
+            logger.info(f"Attempting to delete user: {self.username}")
+            lps = self.find_plate()
+            for lp in lps:
+                self.remove_plate(lp['plate'])
+            result = delete_user_by_id(self.id)
+            if result:
+                logger.info(f"User '{self.username}' deleted successfully.")
+                return True
+            else:
+                logger.warning(f"User '{self.username}' not found.")
+                return False
+        except Exception as e:
+            logger.error(f"Error deleting user '{self.username}': {e}")
+            return False
+
     def find_plate(self):
         """Find license plates associated with the user."""
         try:
             logger.info(f"Attempting to find license plates for user: {self.username}")
-            plates = mongo_license_plate_find_line(self.line)
+            plates = mongo_license_plate_find_user(self.id)
             logger.info(f"Found {len(plates)} license plates for user '{self.username}'.")
             return plates
         except Exception as e:
@@ -100,7 +121,7 @@ class User(UserMixin):
 
             # If it does not exist, insert it
             plate_data = {
-                'line': self.line,
+                'user_id': self.id,
                 'plate': plate_number,
                 'status': False
             }
@@ -120,7 +141,7 @@ class User(UserMixin):
         """Remove a license plate from the database."""
         try:
             logger.info(f"Attempting to remove license plate: {plate_number}")
-            result = mongo_license_plate_delete(plate_number, self.line)
+            result = mongo_license_plate_delete(plate_number, self.id)
             if result:
                 logger.info(f"License plate '{plate_number}' removed successfully.")
                 return f"License plate '{plate_number}' removed successfully."
@@ -163,6 +184,21 @@ class User(UserMixin):
         except Exception as e:
             logger.error(f"Error updating user '{self.username}': {e}")
 
+    def edit_user(self, user_data):
+        """Edit the user's data."""
+        try:
+            self.username = user_data.get('username')
+            self.pic = user_data.get('pic')
+            self.is_admin = user_data.get('is_admin', False)
+            self.limit = user_data.get('limit', 0)
+            self.update_user()
+            logger.info(f"User '{self.username}' edited successfully.")
+            return True
+        except Exception as e:
+            logger.error(f"Error editing user '{self.username}': {e}")
+            return False
+
+
     def minus_limit(self):
         """Decrease the user's limit by 1."""
         try:
@@ -189,6 +225,15 @@ class User(UserMixin):
             logger.error(f"Error increasing user '{self.username}' limit: {e}")
             return False
 
+    def get_users_with_license_plates():
+        """Retrieve all users with their associated license plates."""
+        try:
+            users_with_plates = get_users_with_license_plates()
+            logger.info(f"Retrieved {len(users_with_plates)} users with license plates.")
+            return users_with_plates
+        except Exception as e:
+            logger.error(f"Error retrieving users with license plates: {e}")
+            return []
 
 class LicensePlate:
     def __init__(self, plate_data):
@@ -196,7 +241,7 @@ class LicensePlate:
         try:
             logger.info(f"Initializing LicensePlate object with data: {plate_data}")
             self.id = str(plate_data.get('_id'))
-            self.line = plate_data.get('line')
+            self.user_id = plate_data.get('user_id')
             self.plate = plate_data.get('plate')
             self.status = bool(plate_data.get('status', False))
             logger.info(f"Initialized LicensePlate object for plate: {self.plate}")
@@ -225,24 +270,24 @@ class LicensePlate:
 
 
     @classmethod
-    def find_plate_line(line):
-        """Find a license plate by line."""
+    def find_plate_user(user_id):
+        """Find a license plate by user_id."""
         try:
-            logger.info(f"Attempting to fetch license plate by line: {line}")
-            plate_data = mongo_license_plate_find({'line': line})
+            logger.info(f"Attempting to fetch license plate by user_id: {user_id}")
+            plate_data = mongo_license_plate_find_user({'user_id': user_id})
             if plate_data:
-                logger.info(f"License plate with line '{line}' found in database.")
+                logger.info(f"License plate with user_id '{user_id}' found in database.")
                 return cls(plate_data)
-            logger.warning(f"License plate with line '{line}' not found in database.")
+            logger.warning(f"License plate with user_id '{user_id}' not found in database.")
         except Exception as e:
-            logger.error(f"Error fetching license plate by line '{line}': {e}")
+            logger.error(f"Error fetching license plate by user_id '{user_id}': {e}")
         return None
 
     @classmethod
     def add_plate(cls, plate_data):
         """Add a new license plate to the database."""
         try:
-            lp = find_plate({'plate': plate_data['plate']})
+            lp = mongo_license_plate_find_plate({plate_data['plate']})
             if lp:
                 logger.warning(f"License plate '{plate_data['plate']}' already exists in database.")
                 return None
@@ -270,7 +315,7 @@ class LicensePlate:
     def get_plate_data(self):
         """Return the license plate data dictionary."""
         return {
-            'line': self.line,
+            'user_id': self.user_id,
             'plate': self.plate,
             'status': self.status,
         }
@@ -284,7 +329,7 @@ class LicensePlate:
                 return False  # No change needed, return False
 
             # Get the user associated with the license plate
-            user = User.get_user_by_line_id(self.line)
+            user = User.get_user_by_id(self.user_id)
             if not user:
                 logger.error(f"User associated with license plate '{self.plate}' not found.")
                 return False  # Return False if no user found
@@ -327,3 +372,13 @@ class LicensePlate:
         except Exception as e:
             logger.error(f"Error setting status for license plate '{self.plate}': {e}")
             return False  # Return False on exception
+
+    def get_plates_with_user_data():
+        """Retrieve all license plates with their associated users."""
+        try:
+            plates_with_users = get_plates_with_user_data()
+            logger.info(f"Retrieved {len(plates_with_users)} license plates with users.")
+            return plates_with_users
+        except Exception as e:
+            logger.error(f"Error retrieving license plates with users: {e}")
+            return []

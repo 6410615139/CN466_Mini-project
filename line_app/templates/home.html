@@ -2,24 +2,83 @@
 
 {% block title %}Home{% endblock %}
 
+{% block css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/button.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modal.css') }}">
+{% endblock %}
+
 {% block content %}
-    <h2>Welcome, {{ user.username }}</h2>
-    <p>Your parking status: {{ 'Parked' if user['parking_status'] else 'Free' }}</p>
-    
-    
-    <p>Your license plates:</p>
-    {% if license_plates %}
-        <ul>
-            {% for plate in license_plates %}
-                <li>{{ plate }}</li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No license plates found.</p>
-    {% endif %}
-    
-    <!-- Edit button -->
-    <a href="{{ url_for('home.edit_user') }}">
-        <button>Edit</button>
-    </a>
+<div class="header-row">
+    <h1>License Plates</h1>
+    <button class="btn-add" id="open-modal">+</button>
+</div>
+
+<!-- Modal -->
+<div id="addPlateModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" id="close-modal">&times;</span>
+        <h2>Add Plate</h2>
+        <form action="{{ url_for('home.index') }}" method="POST">
+            {{ form.hidden_tag() }} <!-- CSRF token -->
+            <div>
+                {{ form.plate_number.label }}<br>
+                {{ form.plate_number(class="form-control", style="width: 80%; padding: 8px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;") }}
+                {% for error in form.plate_number.errors %}
+                    <p style="color: red;">{{ error }}</p>
+                {% endfor %}
+            </div>
+            <button type="submit" class="btn-submit">Add</button>
+        </form>
+    </div>
+</div>
+
+{% if admin %}
+<input type="text" id="searchInput" placeholder="Search by username, plate, or status plate..." onkeyup="searchTable()">
+{% endif %}
+
+<table class="ons-table" id="usersTable">
+    <thead>
+        <tr>
+            {% if admin %}
+            <th>Owner</th>
+            {% endif %}
+            <th>Plate</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if license_plates %}
+        {% for plate in license_plates %}
+        <tr>
+            {% if admin %}
+            <td>{{ plate.user_data['username'] }}</td>
+            {% endif %}
+            <td>{{ plate['plate'] }}</td>
+            <td>{{ plate['status'] | default('Inactive') }}</td>
+            <td class="action">
+                {% if not plate['status'] %}
+                <form action="{{ url_for('home.delete_plate', plate=plate['plate']) }}" method="POST">
+                    {{ form.hidden_tag() }} <!-- CSRF token -->
+                    <button type="submit" class="btn-delete">Delete</button>
+                </form>
+                {% else %}
+                Locked
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="3" class="no-license-plates">No license plates found.</td>
+        </tr>
+        {% endif %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block js %}
+<script src="{{ url_for('static', filename='js/home.js') }}"></script>
+<script src="{{ url_for('static', filename='js/search_table.js') }}"></script>
 {% endblock %}

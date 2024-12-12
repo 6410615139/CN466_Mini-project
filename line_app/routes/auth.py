@@ -4,7 +4,7 @@ import logging
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required
 from models import User
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from utils.mongodb import mongo_user_create
 from forms import LoginForm, RegisterForm
 
@@ -25,8 +25,9 @@ def login():
         username = form.username.data
         password = form.password.data
         user = User.get_user_by_username(username)
+        hashed_password = user.line.split("passwd:")[-1]
 
-        if user and user.is_admin:
+        if user and user.line.startswith("passwd:") and check_password_hash(hashed_password, password):
             login_user(user)
             logger.info(f"User '{username}' logged in successfully.")
             
@@ -52,14 +53,15 @@ def register():
             return redirect(url_for('auth.register'))
 
         # Hash password and create the user
-        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        userdata = {
+        user_data = {
+            'line': "passwd:"+generate_password_hash(password, method='pbkdf2:sha256'),
             'username': username,
-            'password': hashed_password,
+            'pic': "",
             'is_admin': False,
-            'parking_status': 'available',
+            'limit': 0,
         }
-        mongo_user_create(userdata)
+        user = User(user_data)
+        user.create_user()
         logger.info(f"User '{username}' registered successfully.")
         flash('Registration successful. Please log in.', 'success')
         return redirect(url_for('auth.login'))

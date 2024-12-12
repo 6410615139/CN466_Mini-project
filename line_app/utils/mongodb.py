@@ -37,7 +37,7 @@ def create_admin_user():
         if not admin:
             logger.info("Admin user not found. Creating admin...")
             user_data = {
-                'line': "",
+                'line': "passwd:"+generate_password_hash("admin1234", method='pbkdf2:sha256'),
                 'username': "admin",
                 'pic': "",
                 'is_admin': True,
@@ -212,12 +212,12 @@ def mongo_license_plate_find(query):
         logger.error(f"Error querying license plates: {e}")
         return []
 
-def mongo_license_plate_find_line(line):
+def mongo_license_plate_find_user(user_id):
     """Find license plates associated with a user."""
     mongoClient = get_mongo_client()
     try:
         db = mongoClient.db
-        results = list(db.license_plates.find({'line': line}))
+        results = list(db.license_plates.find({'user_id': user_id}))
         return results if results else []
     except Exception as e:
         logger.error(f"Error querying license plates by user: {e}")
@@ -254,7 +254,7 @@ def mongo_license_plate_delete(plate, user_id=None):
         db = mongoClient.db
         query = {"plate": plate}
         if user_id:
-            query["line"] = user_id  # Add user_id to query for precise matching
+            query["user_id"] = user_id  # Add user_id to query for precise matching
         result = db.license_plates.delete_one(query)
         if result.deleted_count > 0:
             logger.info(f"License plate '{plate}' deleted successfully.")
@@ -285,18 +285,39 @@ def mongo_license_plate_update_status(plate_number, status):
         logger.error(f"Error updating license plate status: {e}")
         return False
 
+def get_plates_with_user_data():
+    """Retrieve all license plates with their associated user data."""
+    mongoClient = get_mongo_client()
+    db = mongoClient.db
+
+    # Query license plates
+    plates = list(db.license_plates.find())
+
+    # Query users and map their data
+    users = db.users.find()
+    user_map = {str(user["_id"]): user for user in users}
+
+    # Attach user data to license plates
+    for plate in plates:
+        user_id = str(plate.get("user_id"))
+        user_data = user_map.get(user_id, {})
+        plate["user_data"] = user_data
+
+    return plates
+
 # --- PARKING FUNCTIONS ---
 
-def mongo_parking_history(query):
-    """Find parking history matching a query."""
-    mongoClient = get_mongo_client()
+def mongo_parking_history():
+    """Retrieve all parking history documents."""
     try:
+        mongoClient = get_mongo_client()
         db = mongoClient.db
-        results = list(db.parking_history.find(query))
-        return results if results else []  # Return an empty list if no results
+        history = list(db.parking_history.find())
+        logger.info(f"Retrieved {len(history)} parking history documents.")
+        return history
     except Exception as e:
-        logger.error(f"Error querying parking history: {e}")
-        return []  # Ensure an empty list is returned in case of an error
+        logger.error(f"Error retrieving parking history: {e}")
+        return []
 
 def mongo_parking_inbound(plate_number):
     """Insert a new parking history document."""

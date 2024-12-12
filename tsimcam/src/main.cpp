@@ -10,19 +10,23 @@
 static uint8_t* image_buf = nullptr;
 
 int lastIRState = LOW;
+int IRPIN = 21;
 
-// const char* ssid = "Khaw_cafe_2.4GHz";
-// const char* password = "commontu88";
-const char* ssid = "Nit_2.4";
-const char* password = "0814038562";
+const char* ssid = "Khaw_cafe_2.4GHz";
+const char* password = "commontu88";
+// const char* ssid = "Nit_2.4";
+// const char* password = "0814038562";
 
+const char* bound = "/out";
+const char* gate = "bound/gate1";
+const char* server = "https://6n8xrbwf-5002.asse.devtunnels.ms";
 const char* mqttServer = "mqtt.eclipseprojects.io";
 const int mqttPort = 1883;
 const char* mqttCommandTopic = "/flask/message";
-const char* mqttCameraTopic = "/inbound/gate1";
 
-const char* uploadPath = "https://6n8xrbwf-5002.asse.devtunnels.ms/inimage/upload_image";
-const char* videoPath = "https://6n8xrbwf-5002.asse.devtunnels.ms/inimage/video";
+char mqttCameraTopic[50];
+char uploadPath[100];
+char videoPath[100];
 
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
@@ -62,8 +66,20 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 }
 
 void setup() {
+    // Construct the topics and URLs
+    strcpy(mqttCameraTopic, bound);
+    strcat(mqttCameraTopic, gate);
+
+    strcpy(uploadPath, server);
+    strcat(uploadPath, bound);
+    strcat(uploadPath, "image/upload_image");
+
+    strcpy(videoPath, server);
+    strcat(videoPath, bound);
+    strcat(videoPath, "image/video");
+
     Serial.begin(115200);
-    pinMode(21, INPUT);
+    pinMode(IRPIN, INPUT);
     WiFi.begin(ssid, password);
     if (psramFound()) {
         image_buf = (uint8_t*)heap_caps_malloc(IMAGE_BUF_SIZE, MALLOC_CAP_SPIRAM);
@@ -168,5 +184,5 @@ void loop() {
         }
         lastIRState = currentIRState;
     }
-    delay(50);
+    delay(100);
 }

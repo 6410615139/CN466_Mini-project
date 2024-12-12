@@ -1,0 +1,78 @@
+/* General Styling */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    line-height: 1.5;
+}
+
+/* Navigation Bar Styling */
+#navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #0056b3;
+    color: white;
+    padding: 10px 16px;
+}
+
+/* Profile Picture and Username */
+.nav-left {
+    display: flex;
+    align-items: center;
+}
+
+.profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.username {
+    font-size: 1rem;
+    color: white;
+}
+
+/* Navigation Links */
+.nav-right {
+    display: flex;
+    align-items: center;
+}
+
+.nav-right a {
+    color: white;
+    text-decoration: none;
+    margin-left: 16px;
+    font-size: 0.9rem;
+}
+
+.nav-right a:hover {
+    text-decoration: underline;
+}
+
+/* Content Styling */
+#content {
+    margin: 20px;
+    padding: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #navbar {
+        flex-wrap: wrap; /* Allow wrapping for content */
+    }
+
+    .nav-left {
+        flex: 1; /* Take up available space */
+        justify-content: flex-start;
+    }
+
+    .nav-right {
+        flex: 1; /* Take up available space */
+        justify-content: flex-end;
+    }
+
+    .nav-right a {
+        margin-left: 10px;
+    }
+}
