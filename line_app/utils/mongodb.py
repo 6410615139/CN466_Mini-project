@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash
 import logging
 from bson import ObjectId
 from datetime import datetime
+import pytz
 
 load_dotenv()
 
@@ -37,7 +38,7 @@ def create_admin_user():
         if not admin:
             logger.info("Admin user not found. Creating admin...")
             user_data = {
-                'line': "passwd:"+generate_password_hash("admin1234", method='pbkdf2:sha256'),
+                'password': generate_password_hash("admin1234", method='pbkdf2:sha256'),
                 'username': "admin",
                 'pic': "",
                 'is_admin': True,
@@ -324,8 +325,11 @@ def mongo_parking_inbound(plate_number):
     try:
         mongoClient = get_mongo_client()
         db = mongoClient.db
+        bangkok_tz = pytz.timezone('Asia/Bangkok')
+        bangkok_time = datetime.now(bangkok_tz)
+        readable_time = bangkok_time.strftime('%Y-%m-%d %H:%M:%S')
         db.parking_history.insert_one(
-            {"plate": plate_number, "inbound": datetime.now().isoformat(), "outbound": None}
+            {"plate": plate_number, "inbound": readable_time, "outbound": None}
         )
         logger.info(f"Inbound timestamp inserted for plate: {plate_number}")
     except Exception as e:
@@ -336,9 +340,12 @@ def mongo_parking_outbound(plate_number):
     try:
         mongoClient = get_mongo_client()
         db = mongoClient.db
+        bangkok_tz = pytz.timezone('Asia/Bangkok')
+        bangkok_time = datetime.now(bangkok_tz)
+        readable_time = bangkok_time.strftime('%Y-%m-%d %H:%M:%S')
         result = db.parking_history.update_one(
             {"plate": plate_number, "outbound": None},
-            {"$set": {"outbound": datetime.now().isoformat()}}
+            {"$set": {"outbound": readable_time}}
         )
         if result.modified_count > 0:
             logger.info(f"Outbound timestamp updated for plate: {plate_number}")

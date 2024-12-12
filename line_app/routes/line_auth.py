@@ -104,6 +104,7 @@ def line_callback():
                 'is_admin': False,
                 'username': display_name,
                 'limit': 2,
+                'password': ''
             }
             User(user_data).create_user()
             logger.info(f"New user registered via LINE: {line_id}")

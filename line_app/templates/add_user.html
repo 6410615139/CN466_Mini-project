@@ -83,4 +83,15 @@
     </form>
     <a href="{{ url_for('admin.dashboard') }}" class="back-link">Back to Dashboard</a>
 </div>
+
+<!-- Display flash messages if any -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+    <ul>
+        {% for category, message in messages %}
+            <li class="alert {{ category }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% endwith %}
 {% endblock %}

@@ -27,7 +27,7 @@ mqtt_topic = "/outbound/#"
 def on_message(client, userdata, msg):
     global current_folder_uuid
     payload = msg.payload.decode('utf-8')
-    if payload == "disable":
+    if payload == "enable":
         current_folder_uuid = str(uuid.uuid4())
 
 mqtt_client.on_message = on_message

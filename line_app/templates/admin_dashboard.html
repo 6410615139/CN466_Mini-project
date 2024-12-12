@@ -39,8 +39,10 @@
             <tr id="user-row-{{ user['_id'] }}">
                 <td>{{ user['username'] }}</td>
                 <td>
-                    {% if user.line.startswith("passwd:") %}
+                    {% if user['password'] %}
                     *********
+                    {% else %}
+                    No Password (Login via Line)
                     {% endif %}
                 </td>
                 <td>{{ 'Yes' if user['is_admin'] else 'No' }}</td>

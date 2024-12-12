@@ -32,6 +32,7 @@ class User(UserMixin):
     def __init__(self, user_data):
         """Initialize the User object using a dictionary of user data."""
         self.id = str(user_data.get('_id'))
+        self.password = str(user_data.get('password'))
         self.line = user_data.get('line')
         self.username = user_data.get('username')
         self.pic = user_data.get('pic')
@@ -159,8 +160,9 @@ class User(UserMixin):
     def get_user_data(self):
         """Return the user data dictionary."""
         return {
-            'line': self.line,
             'username': self.username,
+            'password': self.password,
+            'line': self.line,
             'pic': self.pic,
             'is_admin': self.is_admin,
             'limit': self.limit,
@@ -169,11 +171,21 @@ class User(UserMixin):
     def create_user(self):
         """Create the user in the database using the user data."""
         user_data = self.get_user_data()
+
+        # Check if the username already exists
+        existing_user = User.get_user_by_username(user_data['username'])
+        if existing_user:
+            logger.warning(f"Registration attempt failed - username '{user_data['username']}' already exists.")
+            return False
+
         try:
+            # Create the user in MongoDB
             mongo_user_create(user_data)
             logger.info(f"User '{self.username}' created successfully.")
+            return {"success": True, "message": f"User '{self.username}' created successfully."}
         except Exception as e:
             logger.error(f"Error creating user '{self.username}': {e}")
+            return {"success": False, "message": "An error occurred while creating the user."}
 
     def update_user(self):
         """Update the user in the database using the user data."""

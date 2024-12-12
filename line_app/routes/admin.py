@@ -149,23 +149,25 @@ def add_user():
 
         # Create user data dictionary
         user_data = {
-            'line': generate_password_hash("line"+password, method='pbkdf2:sha256'),
+            'password': generate_password_hash(password, method='pbkdf2:sha256'),
             'username': username,
             'pic': "",
             'is_admin': False,
             'limit': limit,
+            'line': ""
         }
 
         # Insert new user and related license plates
         try:
             # Insert user into the users collection
             user = User(user_data)
-            user.create_user()
+            if not user.create_user():
+                return redirect(url_for('admin.add_user'))
 
             # Insert license plates into the license_plates collection
             for plate in license_plates:
                 plate_data = {
-                    "line": str(user.id),
+                    "user_id": str(user.id),
                     "plate": plate,
                     "status": False
                 }

@@ -25,9 +25,9 @@ def login():
         username = form.username.data
         password = form.password.data
         user = User.get_user_by_username(username)
-        hashed_password = user.line.split("passwd:")[-1]
+        hashed_password = user.password
 
-        if user and user.line.startswith("passwd:") and check_password_hash(hashed_password, password):
+        if user and check_password_hash(hashed_password, password):
             login_user(user)
             logger.info(f"User '{username}' logged in successfully.")
             
@@ -54,11 +54,12 @@ def register():
 
         # Hash password and create the user
         user_data = {
-            'line': "passwd:"+generate_password_hash(password, method='pbkdf2:sha256'),
+            'password': generate_password_hash(password, method='pbkdf2:sha256'),
             'username': username,
             'pic': "",
             'is_admin': False,
             'limit': 0,
+            'line': ""
         }
         user = User(user_data)
         user.create_user()
