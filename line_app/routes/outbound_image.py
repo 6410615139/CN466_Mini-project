@@ -55,12 +55,21 @@ def check_lp(image_file):
             return jsonify({"error": f"License plate '{plate_number}' not found in the database."}), 404
 
         # Update the license plate status
-        if lp.set_status(False):
-            mqtt_client.publish("/outbound/gate1", "disable")
+        mqtt_message_detected = "detected"
+        mqtt_message_disable = "disable"
+        if lp.set_status(True):
+            mqtt_client.publish("/outbound/gate1", mqtt_message_detected)
+            mqtt_client.publish("/outbound/gate1", mqtt_message_disable)
             return jsonify({
                 "message": "License plate detected and updated successfully.",
                 "plate_number": plate_number
             }), 200
+
+        # notify to plate owner line
+        user = User.get_user_by_id(lp.user_id)
+        if user.line != "":
+            push_message(user.line, f"License plate '{plate_number}' is out.")
+
         else:
             return jsonify({"error": "Failed to update license plate status."}), 500
 

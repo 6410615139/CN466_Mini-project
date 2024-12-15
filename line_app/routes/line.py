@@ -49,10 +49,11 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event):
-    # collect_user_command(event)
     if not exist_user(event):
         if event.message.text == "#create_user":
             reply_text = create_user(event)
+        elif event.message.text == "#liff":
+            command_liff(event)
         else:
             reply_text = "Please register first.\n(type \"#create_user\")"
         with ApiClient(configuration) as api_client:
@@ -65,30 +66,6 @@ def handle_message(event):
             )
     else:
         create_reply(event)
-
-def collect_user_command(event):
-    user_id = event.source.user_id
-    timestamp = event.timestamp
-    user_message = event.message.text
-    timestamp_int = int(timestamp)
-    covert_time = datetime.fromtimestamp(timestamp_int/1000)
-    format_time = covert_time.strftime('%Y-%m-%d %H:%M:%S')
-    try:
-        profile = line_bot_api.get_profile(user_id)
-        display_name = profile.display_name
-        pic_url = profile.picture_url
-    except LineBotApiError as e:
-        display_name = "Unknown"
-        pic_url = None
-        print(f"Error fetching user profile: {e}")
-    user_data = {
-        'user_id': user_id,
-        'timestamp': format_time ,
-        'username': display_name,
-        'picture': pic_url,
-        'command': user_message
-    }
-    # mongo_user_insert(user_data)
 
 def exist_user(event):
     user_id = event.source.user_id
@@ -117,9 +94,7 @@ def create_user(event):
 
 def create_reply(event):
     user_message = event.message.text
-    if user_message == "#liff":
-        command_liff(event)
-    elif user_message.startswith("#lp"):
+    if user_message.startswith("#lp"):
         command_lp(event)
     elif user_message == "#profile" or user_message == "#create_user":
         command_profile(event)
@@ -221,3 +196,14 @@ def command_liff(event):
                     messages=[TextMessage(text=reply_text)]
                 )
             )
+
+def push_message(user_id, message):
+    try:
+        # Send a push message to the user
+        line_bot_api.push_message(
+            user_id,
+            TextSendMessage(text=message)
+        )
+        print(f"Message sent to {user_id}: {message}")
+    except Exception as e:
+        print(f"Error sending message: {e}")
