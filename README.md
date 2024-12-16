@@ -32,3 +32,6 @@ Instructions
 ## Overview
 
 ![README/overview.jpg](README/overview.jpg)
+
+Demo Clip: https://youtu.be/O1CW4Y6Mj5U
+
