@@ -21,6 +21,7 @@ from linebot.v3.messaging import (
     ApiClient,
     MessagingApi,
     ReplyMessageRequest,
+    PushMessageRequest,
     TextMessage,
     ImageMessage
 )
@@ -49,10 +50,11 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event):
+    # collect_user_command(event)
     if not exist_user(event):
         if event.message.text == "#create_user":
             reply_text = create_user(event)
-        elif event.message.text == "#liff":
+        if event.message.text == "#liff":
             command_liff(event)
         else:
             reply_text = "Please register first.\n(type \"#create_user\")"
@@ -66,6 +68,30 @@ def handle_message(event):
             )
     else:
         create_reply(event)
+
+def collect_user_command(event):
+    user_id = event.source.user_id
+    timestamp = event.timestamp
+    user_message = event.message.text
+    timestamp_int = int(timestamp)
+    covert_time = datetime.fromtimestamp(timestamp_int/1000)
+    format_time = covert_time.strftime('%Y-%m-%d %H:%M:%S')
+    try:
+        profile = line_bot_api.get_profile(user_id)
+        display_name = profile.display_name
+        pic_url = profile.picture_url
+    except LineBotApiError as e:
+        display_name = "Unknown"
+        pic_url = None
+        print(f"Error fetching user profile: {e}")
+    user_data = {
+        'user_id': user_id,
+        'timestamp': format_time ,
+        'username': display_name,
+        'picture': pic_url,
+        'command': user_message
+    }
+    # mongo_user_insert(user_data)
 
 def exist_user(event):
     user_id = event.source.user_id
@@ -94,7 +120,9 @@ def create_user(event):
 
 def create_reply(event):
     user_message = event.message.text
-    if user_message.startswith("#lp"):
+    if user_message == "#liff":
+        command_liff(event)
+    elif user_message.startswith("#lp"):
         command_lp(event)
     elif user_message == "#profile" or user_message == "#create_user":
         command_profile(event)
@@ -198,12 +226,25 @@ def command_liff(event):
             )
 
 def push_message(user_id, message):
+    """
+    Send a push message to a user via LINE Messaging API.
+
+    Args:
+        user_id (str): The recipient's LINE user ID.
+        message (str): The message text to send.
+    """
     try:
-        # Send a push message to the user
-        line_bot_api.push_message(
-            user_id,
-            TextSendMessage(text=message)
-        )
-        print(f"Message sent to {user_id}: {message}")
+        # Configure the LINE Messaging API client
+        with ApiClient(configuration) as api_client:
+            line_bot_api = MessagingApi(api_client)
+            
+            # Send the push message
+            response = line_bot_api.push_message_with_http_info(
+                PushMessageRequest(
+                    to=user_id,
+                    messages=[TextMessage(text=message)]
+                )
+            )
+            print(f"Message sent to {user_id}: {message}, Response: {response}")
     except Exception as e:
-        print(f"Error sending message: {e}")
+        print(f"Error sending message to {user_id}: {e}")

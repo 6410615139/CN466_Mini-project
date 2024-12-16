@@ -12,7 +12,7 @@ static uint8_t* image_buf = nullptr;
 const char* ssid = "Khaw_cafe_2.4GHz";
 const char* password = "commontu88";
 
-const char* bound = "/out";
+const char* bound = "/in";
 const char* gate = "bound/gate1";
 const char* server = "https://6n8xrbwf-5002.asse.devtunnels.ms";
 const char* mqttServer = "mqtt.eclipseprojects.io";

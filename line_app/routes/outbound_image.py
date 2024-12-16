@@ -10,7 +10,8 @@ import threading
 import subprocess
 from io import BytesIO
 from flask import Blueprint, request, jsonify
-from models import LicensePlate
+from models import LicensePlate, User
+from routes.line import push_message
 
 outimage_blueprint = Blueprint('outimage', __name__)
 
@@ -55,20 +56,17 @@ def check_lp(image_file):
             return jsonify({"error": f"License plate '{plate_number}' not found in the database."}), 404
 
         # Update the license plate status
-        mqtt_message_detected = "detected"
-        mqtt_message_disable = "disable"
-        if lp.set_status(True):
-            mqtt_client.publish("/outbound/gate1", mqtt_message_detected)
-            mqtt_client.publish("/outbound/gate1", mqtt_message_disable)
-            return jsonify({
-                "message": "License plate detected and updated successfully.",
-                "plate_number": plate_number
-            }), 200
+        if lp.set_status(False):
+            mqtt_client.publish("/inbound/gate1/barrier", "detected")
+            mqtt_client.publish("/outbound/gate1", "disable")
+            user = User.get_user_by_id(lp.user_id)
+            if not user.line == "":
+                push_message(user.line, f"Your car with license plate {plate_number} has been checked out.")
+                return jsonify({
+                    "message": "License plate detected and updated successfully.",
+                    "plate_number": plate_number
+                }), 200
 
-        # notify to plate owner line
-        user = User.get_user_by_id(lp.user_id)
-        if user.line != "":
-            push_message(user.line, f"License plate '{plate_number}' is out.")
 
         else:
             return jsonify({"error": "Failed to update license plate status."}), 500
